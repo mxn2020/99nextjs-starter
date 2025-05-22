@@ -402,7 +402,7 @@ export async function getUserActivityLogsServer(
     const { data, error, count } = await supabase
         .from('user_activity_logs')
         .select('*', { count: 'exact' })
-        .or(`user_id.eq.<span class="math-inline">\{targetUserId\},actor\_id\.eq\.</span>{targetUserId}`) // Logs where user is either target or actor
+        .or(`user_id.eq.${targetUserId},actor_id.eq.${targetUserId}`) // Logs where user is either target or actor
         .order('created_at', { ascending: false })
         .range(startIndex, startIndex + itemsPerPage - 1);
 

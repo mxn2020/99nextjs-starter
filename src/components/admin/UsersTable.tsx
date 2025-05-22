@@ -49,13 +49,13 @@ export default function UsersTable({
     } else {
       params.delete('query');
     }
-    router.push(`<span class="math-inline">\{pathname\}?</span>{params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', newPage.toString());
-    router.push(`<span class="math-inline">\{pathname\}?</span>{params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
   
   useEffect(() => {
