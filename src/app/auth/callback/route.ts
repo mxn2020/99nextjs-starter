@@ -1,20 +1,30 @@
-
-// Path: app/auth/callback/route.ts
-// Note: some Supabase docs put this in /api/auth/callback/route.ts. Ensure consistency with your OAuth provider redirect URI settings.
-// For this example, we'll use /auth/callback/route.ts based on common Supabase examples.
-// If you use /api/auth/callback, update middleware and Supabase dashboard settings.
+// src/app/auth/callback/route.ts
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
 import type { Database } from '@/lib/database.types';
+import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/dashboard'; // Default to dashboard
+  const next = searchParams.get('next') ?? '/dashboard';
+  const error = searchParams.get('error');
+  const errorDescription = searchParams.get('error_description');
 
-  if (code) {
+  // Handle OAuth errors
+  if (error) {
+    console.error('OAuth error:', error, errorDescription);
+    const errorMessage = errorDescription || error;
+    return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent(`Authentication failed: ${errorMessage}`)}`);
+  }
+
+  if (!code) {
+    console.error('OAuth callback: No code found in request.');
+    return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent('Authentication failed: No authorization code provided.')}`);
+  }
+
+  try {
     const cookieStore = await cookies();
     const supabase = createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,28 +43,52 @@ export async function GET(request: Request) {
         },
       }
     );
-    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      // Check if profile exists, if not, user might be new from OAuth
-      // The handle_new_user trigger should create a profile.
-      // We can then check onboarding status.
-      const { data: userProfile } = await supabase
-        .from('users')
-        .select('onboarding_completed')
-        .eq('id', data.session.user.id)
-        .single();
 
-      if (userProfile && !userProfile.onboarding_completed) {
-        return NextResponse.redirect(`${origin}/onboarding/step1`);
-      }
-      return NextResponse.redirect(`${origin}${next}`);
+    const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    
+    if (exchangeError) {
+      console.error('OAuth exchange error:', exchangeError.message);
+      return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent(`Authentication failed: ${exchangeError.message}`)}`);
     }
-    console.error('OAuth callback error:', error.message);
-    // Redirect to an error page or login page with an error message
-    return NextResponse.redirect(`${origin}/login?message=Authentication failed: ${encodeURIComponent(error.message)}`);
-  }
 
-  // return the user to an error page with instructions
-  console.error('OAuth callback: No code found in request.');
-  return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent('Authentication failed: No code provided.')}`);
+    if (!data.session || !data.user) {
+      return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent('Authentication failed: Invalid session.')}`);
+    }
+
+    // Check for potential account conflicts
+    const userEmail = data.user.email;
+    if (userEmail) {
+      const supabaseAdmin = createSupabaseAdminClient();
+      
+      // Check if there's already a different user with this email
+      const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+      const conflictingUser = existingUsers.users?.find(u => 
+        u.email === userEmail && u.id !== data.user.id
+      );
+
+      if (conflictingUser) {
+        // Handle account conflict - redirect to account linking page
+        await supabase.auth.signOut();
+        return NextResponse.redirect(`${origin}/auth/link-accounts?email=${encodeURIComponent(userEmail)}&conflict=true`);
+      }
+    }
+
+    // Check if profile exists
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('onboarding_completed')
+      .eq('id', data.session.user.id)
+      .single();
+
+    if (userProfile && !userProfile.onboarding_completed) {
+      return NextResponse.redirect(`${origin}/onboarding/step1`);
+    }
+
+    return NextResponse.redirect(`${origin}${next}`);
+
+  } catch (error: any) {
+    console.error('OAuth callback error:', error);
+    return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent(`Authentication failed: ${error.message || 'Unknown error'}`)}`);
+  }
 }
+
