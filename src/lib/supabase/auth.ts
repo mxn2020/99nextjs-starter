@@ -99,17 +99,14 @@ export async function getCurrentUserServer(
     () => {};
     
   log('Getting current user from server');
-  
-  const supabase = await createSupabaseServerClient(undefined, {
-    headers: options?.headers,
-    debug
-  });
-  
+
+  const supabase = await createSupabaseServerClient();
+
   try {
     // Get the user data
     const { data, error } = await supabase.auth.getUser();
     if (error && !options?.silentMode) throw error;
-    
+
     // Get session data
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError && !options?.silentMode) throw sessionError;
@@ -159,10 +156,7 @@ export async function getCurrentUserBrowser(
     
   log('Getting current user from browser');
   
-  const supabase = createSupabaseBrowserClient({
-    headers: options?.headers,
-    debug
-  });
+  const supabase = createSupabaseBrowserClient();
   
   try {
     // Get both user and session for consistency
@@ -217,10 +211,7 @@ export async function signInWithPassword(
     
   log('Signing in with password');
   
-  const supabase = createSupabaseBrowserClient({
-    headers: options?.headers,
-    debug
-  });
+  const supabase = createSupabaseBrowserClient();
   
   try {
     const { data, error } = await supabase.auth.signInWithPassword(credentials);
@@ -265,19 +256,16 @@ export async function signUpWithPassword(
     () => {};
     
   log('Signing up with password');
-  
-  const supabase = createSupabaseBrowserClient({
-    headers: options?.headers,
-    debug
-  });
-  
+
+  const supabase = createSupabaseBrowserClient();
+
   try {
     const { data, error } = await supabase.auth.signUp(credentials);
     if (error) throw error;
-    
-    log('Sign-up successful', { 
+
+    log('Sign-up successful', {
       emailConfirm: !data.session,
-      userId: data.user?.id 
+      userId: data.user?.id
     });
     
     return { 
@@ -335,12 +323,9 @@ export async function signInWithOAuth(
     () => {};
     
   log('Signing in with OAuth provider', { provider });
-  
-  const supabase = createSupabaseBrowserClient({
-    headers: options?.headers,
-    debug
-  });
-  
+
+  const supabase = createSupabaseBrowserClient();
+
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -397,18 +382,15 @@ export async function signOutBrowser(
     () => {};
     
   log('Signing out from browser');
-  
-  const supabase = createSupabaseBrowserClient({
-    headers: options?.headers,
-    debug
-  });
-  
+
+  const supabase = createSupabaseBrowserClient();
+
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    
+
     log('Sign-out successful');
-    
+
     return { data: true, error: null };
   } catch (error) {
     const errorMessage = error instanceof Error ? 
@@ -444,10 +426,7 @@ export async function signOutServer(
     
   log('Signing out from server');
   
-  const supabase = await createSupabaseServerClient(undefined, {
-    headers: options?.headers,
-    debug
-  });
+  const supabase = await createSupabaseServerClient();
   
   try {
     const { error } = await supabase.auth.signOut();
@@ -495,10 +474,7 @@ export async function resetPassword(
     
   log('Sending password reset email');
   
-  const supabase = createSupabaseBrowserClient({
-    headers: options?.headers,
-    debug
-  });
+    const supabase = createSupabaseBrowserClient();
   
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -548,10 +524,7 @@ export async function updateUserProfile(
     
   log('Updating user profile');
   
-  const supabase = createSupabaseBrowserClient({
-    headers: options?.headers,
-    debug
-  });
+  const supabase = createSupabaseBrowserClient();
   
   try {
     const { data, error } = await supabase.auth.updateUser(userData);
@@ -592,18 +565,15 @@ export async function refreshSession(
     () => {};
     
   log('Refreshing user session');
-  
-  const supabase = createSupabaseBrowserClient({
-    headers: options?.headers,
-    debug
-  });
-  
+
+  const supabase = createSupabaseBrowserClient();
+
   try {
     const { data, error } = await supabase.auth.refreshSession();
     if (error) throw error;
-    
+
     log('Session refreshed');
-    
+
     return { data: data.session, error: null };
   } catch (error) {
     const errorMessage = error instanceof Error ? 

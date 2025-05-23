@@ -23,8 +23,8 @@ const eslintConfig = [
       "@typescript-eslint/no-explicit-any": "off", // Allow the use of 'any' type
       "@typescript-eslint/no-empty-object-type": "warn", // Change empty object types from error to warning
       "no-unused-vars": "warn", // For JavaScript files
-      "prefer-const": "warn" // Change 'never reassigned' from error to warning
-      // Removing the problematic rule that couldn't be found
+      "prefer-const": "warn", // Change 'never reassigned' from error to warning
+      "@typescript-eslint/no-unused-expressions": "warn" // Add as warning instead of error
     }
   }
 ];

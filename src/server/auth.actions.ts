@@ -97,32 +97,86 @@ export async function loginWithOAuth(provider: 'github' | 'google', redirectTo?:
   const cookieStore = await cookies();
   const supabase = await createSupabaseServerClient(cookieStore);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3099';
-  let authRedirectTo = `${appUrl}/auth/callback`; // Ensure this matches your Supabase dashboard and route handler path
-
+  
+  // Construct the callback URL
+  let authRedirectTo = `${appUrl}/auth/callback`;
+  
   if (redirectTo) {
-    // Encode the final destination into the OAuth redirect
     const params = new URLSearchParams();
     params.set('next', redirectTo);
     authRedirectTo = `${authRedirectTo}?${params.toString()}`;
   }
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      redirectTo: authRedirectTo,
-    },
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: authRedirectTo,
+        // Ensure PKCE is properly configured
+        skipBrowserRedirect: false,
+        // Add scopes if needed
+        scopes: provider === 'github' ? 'user:email' : 'email profile',
+        // Query parameters for additional control
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent', // For Google, ensures we get refresh token
+        },
+      },
+    });
 
-  if (error) {
-    console.error(`OAuth ${provider} error:`, error.message);
-    // Can't redirect here directly from server action for OAuth, error needs to be handled on client or page
-    return { error: error.message };
+    if (error) {
+      console.error(`OAuth ${provider} error:`, error);
+      return { error: error.message };
+    }
+
+    if (data.url) {
+      redirect(data.url);
+    }
+    
+    return { success: true };
+  } catch (err: any) {
+    console.error(`OAuth ${provider} exception:`, err);
+    return { error: err.message || 'OAuth authentication failed' };
+  }
+}
+
+// Enhanced linking function for existing users
+export async function linkOAuthAccount(provider: 'github' | 'google') {
+  const cookieStore = await cookies();
+  const supabase = await createSupabaseServerClient(cookieStore);
+  
+  // Verify user is already authenticated
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return { error: 'User must be authenticated to link accounts' };
   }
 
-  if (data.url) {
-    redirect(data.url); // Redirect to Supabase provider authentication page
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3099';
+  const authRedirectTo = `${appUrl}/auth/callback?action=link&next=/dashboard/settings`;
+
+  try {
+    const { data, error } = await supabase.auth.linkIdentity({
+      provider,
+      options: {
+        redirectTo: authRedirectTo,
+        scopes: provider === 'github' ? 'user:email' : 'email profile',
+      },
+    });
+
+    if (error) {
+      console.error(`Link ${provider} error:`, error);
+      return { error: error.message };
+    }
+
+    if (data.url) {
+      redirect(data.url);
+    }
+    
+    return { success: true };
+  } catch (err: any) {
+    console.error(`Link ${provider} exception:`, err);
+    return { error: err.message || 'Account linking failed' };
   }
-  return {}; // Should have redirected
 }
 
 export async function loginWithMagicLink(prevState: any, formData: FormData) {
