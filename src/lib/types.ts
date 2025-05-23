@@ -52,13 +52,13 @@ export interface OnboardingDataStep3 extends UserCustomPreferences { }
 
 
 // Types for User Activity Logging
-export type ActivityLogType = Database['public']['Enums']['activity_log_type'] | 
-  'USER_OAUTH_LINK' | 
-  'USER_OAUTH_UNLINK' | 
-  'USER_DATA_EXPORT_REQUEST' |
-  'USER_ACCOUNT_DELETE' |
-  'USER_PASSWORD_RESET_REQUEST' | // Ensuring all types are covered
-  'ADMIN_SYSTEM_SETTINGS_UPDATE';
+export type ActivityLogType = Database['public']['Enums']['activity_log_type']
+  | 'USER_OAUTH_LINK'  
+  | 'USER_OAUTH_UNLINK' 
+  | 'USER_DATA_EXPORT_REQUEST' 
+  | 'USER_ACCOUNT_DELETE' 
+  | 'USER_PASSWORD_RESET_REQUEST' 
+  | 'ADMIN_SYSTEM_SETTINGS_UPDATE';
 
 
 export type UserActivityLogInsert = Database['public']['Tables']['user_activity_logs']['Insert'] & {
@@ -71,8 +71,10 @@ export type UserActivityLog = Database['public']['Tables']['user_activity_logs']
 
 // Generic type for server action results with potential errors
 export type ActionResult<T = null> =
-    | { success: true; data?: T, message?: string } // Added optional message for success
-    | { success: false; error: string , errors?: any | null }; // Simplified error structure and optional detailed errors
+    | { success: true; data?: T, message?: string }
+    | { success: false; error: string , errors?: any | null }
+    | { success: false; error: { message: string } , errors?: any | null }
+    | { success: false; error: { message: string, code: string } , errors?: any | null }
 
 
 // Supabase User Identity type
