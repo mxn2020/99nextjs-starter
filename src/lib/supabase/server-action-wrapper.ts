@@ -2,7 +2,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { createSupabaseServerActionClient } from './server';
+import { createSupabaseServerClient } from './server';
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { createLogger } from '@/lib/logger';
 import { User } from '@supabase/supabase-js';
@@ -76,9 +76,7 @@ export async function withAuth<Args extends unknown[], Result>(
     }
     
     // Create Supabase client for auth checks
-    const supabase = await createSupabaseServerActionClient(cookieStore, {
-      headers: options?.headers,
-    });
+    const supabase = await createSupabaseServerClient();
     
     // Get the authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
