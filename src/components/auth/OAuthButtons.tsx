@@ -11,10 +11,10 @@ import { redirect } from 'next/navigation';
 interface OAuthButtonsProps {
   redirectTo?: string;
   isSignUp?: boolean;
-  isLinking?: boolean; // New prop for account linking mode
+  manualAccountLinking: boolean; // New prop for account linking mode
 }
 
-export default function OAuthButtons({ redirectTo, isSignUp = false, isLinking = false }: OAuthButtonsProps) {
+export default function OAuthButtons({ redirectTo, isSignUp = false, manualAccountLinking = false }: OAuthButtonsProps) {
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
   const handleOAuth = async (provider: 'github' | 'google') => {
@@ -22,7 +22,7 @@ export default function OAuthButtons({ redirectTo, isSignUp = false, isLinking =
     
     try {
       let result;
-      if (isLinking) {
+      if (manualAccountLinking) {
         result = await linkOAuthAccount(provider);
       } else {
         result = await loginWithOAuth(provider, redirectTo);
@@ -30,7 +30,7 @@ export default function OAuthButtons({ redirectTo, isSignUp = false, isLinking =
       
       // Only handle actual errors, not redirects
       if (result?.error && result.error !== 'NEXT_REDIRECT') {
-        toast.error(`${isLinking ? 'Account linking' : 'Authentication'} failed: ${result.error}`);
+        toast.error(`${manualAccountLinking ? 'Account linking' : 'Authentication'} failed: ${result.error}`);
         setLoadingProvider(null);
       }
       // If result.error === 'NEXT_REDIRECT' or no error, the redirect is happening successfully
@@ -39,7 +39,7 @@ export default function OAuthButtons({ redirectTo, isSignUp = false, isLinking =
       // Only catch actual errors, not Next.js redirects
       if (error?.message !== 'NEXT_REDIRECT' && !error?.digest?.includes('NEXT_REDIRECT')) {
         console.error('OAuth error:', error);
-        toast.error(`${isLinking ? 'Account linking' : 'Authentication'} failed: ${error.message || 'Unknown error'}`);
+        toast.error(`${manualAccountLinking ? 'Account linking' : 'Authentication'} failed: ${error.message || 'Unknown error'}`);
         setLoadingProvider(null);
       }
       // If it's a NEXT_REDIRECT error, let it continue (this is expected behavior)
@@ -47,7 +47,7 @@ export default function OAuthButtons({ redirectTo, isSignUp = false, isLinking =
   };
 
   const getButtonText = (provider: string) => {
-    if (isLinking) return `Link ${provider}`;
+    if (manualAccountLinking) return `Link ${provider}`;
     return isSignUp ? `Sign up with ${provider}` : `Continue with ${provider}`;
   };
 
