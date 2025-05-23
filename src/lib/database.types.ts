@@ -34,6 +34,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      system_settings: {
+        Row: {
+          id: number
+          settings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          settings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          settings?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_activity_logs: {
         Row: {
           activity_type: Database["public"]["Enums"]["activity_log_type"]
@@ -135,6 +153,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_active_users_count: {
+        Args: { p_interval?: unknown }
+        Returns: number
+      }
+      get_daily_signups: {
+        Args: { days_limit?: number }
+        Returns: {
+          signup_date: string
+          count: number
+        }[]
+      }
+      get_total_users_count: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_user_role_distribution: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          role: Database["public"]["Enums"]["user_role"]
+          count: number
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

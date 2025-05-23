@@ -51,18 +51,15 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
 
   const handleLinkAccount = async (provider: 'github' | 'google') => {
     setLinkingProvider(provider);
-    console.log('Starting link for:', provider);
 
     try {
       const result = await linkOAuthAccount(provider);
-      console.log('Link result:', result);
 
       if (result?.error && result.error !== 'NEXT_REDIRECT') {
         toast.error(`Failed to link ${provider}: ${result.error}`);
         setLinkingProvider(null);
       }
     } catch (error: any) {
-      console.log('Caught error:', error);
 
       if (error?.message !== 'NEXT_REDIRECT' && !error?.digest?.includes('NEXT_REDIRECT')) {
         console.error('OAuth error:', error);
