@@ -107,37 +107,34 @@ export async function loginWithOAuth(provider: 'github' | 'google', redirectTo?:
     authRedirectTo = `${authRedirectTo}?${params.toString()}`;
   }
 
-  try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: authRedirectTo,
-        // Ensure PKCE is properly configured
-        skipBrowserRedirect: false,
-        // Add scopes if needed
-        scopes: provider === 'github' ? 'user:email' : 'email profile',
-        // Query parameters for additional control
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent', // For Google, ensures we get refresh token
-        },
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: authRedirectTo,
+      // Ensure PKCE is properly configured
+      skipBrowserRedirect: false,
+      // Add scopes if needed
+      scopes: provider === 'github' ? 'user:email' : 'email profile',
+      // Query parameters for additional control
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent', // For Google, ensures we get refresh token
       },
-    });
+    },
+  });
 
-    if (error) {
-      console.error(`OAuth ${provider} error:`, error);
-      return { error: error.message };
-    }
-
-    if (data.url) {
-      redirect(data.url);
-    }
-    
-    return { success: true };
-  } catch (err: any) {
-    console.error(`OAuth ${provider} exception:`, err);
-    return { error: err.message || 'OAuth authentication failed' };
+  if (error) {
+    console.error(`OAuth ${provider} error:`, error);
+    return { error: error.message };
   }
+
+  if (data.url) {
+    // redirect() throws NEXT_REDIRECT internally - this is expected behavior
+    redirect(data.url);
+  }
+  
+  // This line should never be reached due to redirect above
+  return { success: true };
 }
 
 // Enhanced linking function for existing users
