@@ -43,7 +43,7 @@ export const onboardingStep3Schema = z.object({
 });
 
 export const profileUpdateSchema = z.object({
-  display_name: z.string().min(2, 'Display name must be at least 2 characters.').max(50, 'Display name too long.').optional(),
+  display_name: z.string().min(2, 'Display name must be at least 2 characters.').max(50, 'Display name too long.').optional().or(z.literal('')),
   // avatar_url will be a string URL after upload
 });
 
@@ -62,6 +62,7 @@ export const accountPreferencesFormSchema = z.object({
   interface_density: z.enum(['compact', 'default', 'comfortable']).default('default').optional(),
 });
 
+// Schema for server action data processing (handles 'on' from FormData for boolean)
 export const accountPreferencesSchema = z.object({
   notifications_enabled: z.preprocess(
     value => value === 'on' || value === true || value === "true",
@@ -82,3 +83,10 @@ export const changePasswordSchema = z.object({
 });
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+
+export const deleteAccountConfirmationSchema = z.object({
+    confirmationPhrase: z.string().refine(val => val === "DELETE MY ACCOUNT", {
+        message: "To confirm deletion, you must type 'DELETE MY ACCOUNT'."
+    })
+});
+export type DeleteAccountConfirmationFormData = z.infer<typeof deleteAccountConfirmationSchema>;

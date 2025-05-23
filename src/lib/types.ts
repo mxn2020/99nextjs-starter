@@ -1,6 +1,8 @@
 
 // Import Database types if you have them generated
 import type { Database, Json } from './database.types';
+import type { UserIdentity as SupabaseUserIdentity } from '@supabase/supabase-js';
+
 
 // User profile data from your public.users table
 // Explicitly define preferences structure if needed, otherwise it's Json
@@ -38,6 +40,7 @@ export interface ExtendedAuthUser {
 // Combined type for user data often fetched together
 export type UserWithProfileAndAuth = UserProfile & {
     auth_user?: ExtendedAuthUser | null; // Optional auth user details
+    identities?: UserIdentity[] | null; // Added from Supabase User
 };
 
 export interface OnboardingDataStep1 {
@@ -49,15 +52,29 @@ export interface OnboardingDataStep3 extends UserCustomPreferences { }
 
 
 // Types for User Activity Logging
-export type ActivityLogType = Database['public']['Enums']['activity_log_type'];
+export type ActivityLogType = Database['public']['Enums']['activity_log_type'] | 
+  'USER_OAUTH_LINK' | 
+  'USER_OAUTH_UNLINK' | 
+  'USER_DATA_EXPORT_REQUEST' |
+  'USER_ACCOUNT_DELETE' |
+  'USER_PASSWORD_RESET_REQUEST' | // Ensuring all types are covered
+  'ADMIN_SYSTEM_SETTINGS_UPDATE';
 
-export type UserActivityLogInsert = Database['public']['Tables']['user_activity_logs']['Insert'];
-export type UserActivityLog = Database['public']['Tables']['user_activity_logs']['Row'];
+
+export type UserActivityLogInsert = Database['public']['Tables']['user_activity_logs']['Insert'] & {
+    activity_type: ActivityLogType; // Override to use the extended union type
+};
+export type UserActivityLog = Database['public']['Tables']['user_activity_logs']['Row'] & {
+    activity_type: ActivityLogType; // Override to use the extended union type
+};
 
 
 // Generic type for server action results with potential errors
 export type ActionResult<T = null> =
-    | { success: true; data: T }
-    | { success: false; error: { message: string; code?: string } };
+    | { success: true; data?: T, message?: string } // Added optional message for success
+    | { success: false; error: string , errors?: any | null }; // Simplified error structure and optional detailed errors
 
+
+// Supabase User Identity type
+export type UserIdentity = SupabaseUserIdentity;
 
