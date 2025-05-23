@@ -1,4 +1,3 @@
-
 "use server";
 
 import { z } from 'zod';
@@ -10,7 +9,7 @@ import { redirect } from 'next/navigation';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { logUserActivity } from '@/lib/activityLog';
 import { adminCreateUserSchema } from '@/lib/schemas';
-import type { UserProfile } from '@/lib/types';
+import type { UserCustomPreferences, UserProfile } from '@/lib/types';
 
 // Schema for updating user details by admin
 const adminUserUpdateSchema = z.object({
@@ -72,16 +71,23 @@ export async function createUserByAdmin(prevState: any, formData: FormData) {
     if (newUser && newUser.user) {
         // The handle_new_user trigger should create a profile.
         // We might need to explicitly update role or other fields if trigger doesn't cover all.
-        const profileDataToSet: Partial<UserProfile> = {
+        const profileUpdateData: { // Explicitly define the type for the update payload
+            role: typeof role;
+            onboarding_completed: typeof onboarding_completed;
+            updated_at: string;
+            display_name?: string; // display_name is optional and will be a string if present
+        } = {
             role: role, // Ensure role is set
             onboarding_completed: onboarding_completed,
             updated_at: new Date().toISOString(),
         };
-        if (display_name) profileDataToSet.display_name = display_name;
+        if (display_name) { // display_name is from result.data (string | undefined)
+            profileUpdateData.display_name = display_name; // Assigns if display_name is a non-empty string
+        }
 
         const { error: profileUpdateError } = await supabaseAdmin
             .from('users')
-            .update(profileDataToSet)
+            .update(profileUpdateData) // Use the correctly typed object
             .eq('id', newUser.user.id);
 
         if (profileUpdateError) {
@@ -155,7 +161,12 @@ export async function updateUserByAdmin(prevState: any, formData: FormData) {
 
 
     const changes: Record<string, { old: any, new: any }> = {};
-    const dataToUpdate: Partial<UserProfile> = {};
+    const dataToUpdate: { // Explicitly define the type for the update payload
+        role?: 'user' | 'admin';
+        display_name?: string | null;
+        onboarding_completed?: boolean;
+        updated_at?: string;
+    } = {};
 
     if (updateDataFromForm.role !== undefined && updateDataFromForm.role !== existingUserData?.role) {
         dataToUpdate.role = updateDataFromForm.role;
@@ -414,4 +425,3 @@ export async function getUserActivityLogsServer(
 }
 
 // TODO: Implement saveSystemSettingsAction if needed.
-    
