@@ -55,7 +55,7 @@ export interface BrowserClientOptions {
 export function createSupabaseBrowserClient(
   options?: BrowserClientOptions
 ): SupabaseClient<Database> {
-  const tokenStorageKey = options?.storageKey || process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key-dev'
+  const tokenStorageKey = options?.storageKey || process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key'
   
   // Get configuration with optional overrides
   const config = getSupabaseConfig({

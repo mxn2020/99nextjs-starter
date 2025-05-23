@@ -173,7 +173,7 @@ export async function createSupabaseServerClient(
     clientOptions = options;
   }
 
-  const tokenStorageKey = clientOptions?.cookieName || process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key-dev'
+  const tokenStorageKey = clientOptions?.cookieName || process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key'
 
   // Get configuration with optional overrides
   const config = getSupabaseConfig({
