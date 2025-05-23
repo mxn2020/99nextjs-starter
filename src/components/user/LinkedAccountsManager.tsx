@@ -48,14 +48,27 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
   const router = useRouter();
 
   const handleLinkAccount = async (provider: 'github' | 'google') => {
-    startTransition(async () => {
+    try {
+          startTransition(async () => {
       // Redirect to settings page after linking, with a query param for feedback
       const result = await linkOAuthAccount(provider);
       if (result?.error) {
         toast.error(`Failed to link ${provider}: ${result.error}`);
       }
+       if (result?.error && result.error !== 'NEXT_REDIRECT') {
+        toast.error(`Failed to link ${provider}: ${result.error}`);
+      }
       // Server action handles the redirect to OAuth provider
     });
+
+     } catch (error: any) {
+      // Only catch actual errors, not Next.js redirects
+      if (error?.message !== 'NEXT_REDIRECT' && !error?.digest?.includes('NEXT_REDIRECT')) {
+        console.error('OAuth error:', error);
+        toast.error(`Failed to link ${provider}: ${error.message || 'Unknown error'}`);
+      }
+      // If it's a NEXT_REDIRECT error, let it continue (this is expected behavior)
+    }
   };
 
   const handleUnlinkAccount = async (identity: UserIdentity) => {
