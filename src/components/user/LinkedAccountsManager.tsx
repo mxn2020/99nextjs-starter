@@ -44,25 +44,30 @@ const SUPPORTED_OAUTH_PROVIDERS: ProviderInfo[] = [
 export default function LinkedAccountsManager({ identities: initialIdentities, currentUserId }: LinkedAccountsManagerProps) {
   const [isPending, startTransition] = useTransition();
   const [identities, setIdentities] = useState<UserIdentity[]>(initialIdentities);
+  const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
 
-  const handleLinkAccount = async (provider: 'github' | 'google') => {
-    try {
-      startTransition(async () => {
-        // Redirect to settings page after linking, with a query param for feedback
-        const result = await linkOAuthAccount(provider);
-        if (result?.error && result.error !== 'NEXT_REDIRECT') {
-          toast.error(`Failed to link ${provider}: ${result.error}`);
-        }
-        // Server action handles the redirect to OAuth provider
-      });
 
+  const handleLinkAccount = async (provider: 'github' | 'google') => {
+    setLinkingProvider(provider);
+
+    // Don't use startTransition for server actions that redirect
+    try {
+      const result = await linkOAuthAccount(provider);
+
+      // Only handle actual errors, not redirects
+      if (result?.error && result.error !== 'NEXT_REDIRECT') {
+        toast.error(`Failed to link ${provider}: ${result.error}`);
+        setLinkingProvider(null);
+      }
+      // If we get here without an error, the redirect should happen
     } catch (error: any) {
       // Only catch actual errors, not Next.js redirects
       if (error?.message !== 'NEXT_REDIRECT' && !error?.digest?.includes('NEXT_REDIRECT')) {
         console.error('OAuth error:', error);
         toast.error(`Failed to link ${provider}: ${error.message || 'Unknown error'}`);
+        setLinkingProvider(null);
       }
       // If it's a NEXT_REDIRECT error, let it continue (this is expected behavior)
     }
@@ -158,7 +163,7 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
                 key={provider.key}
                 variant="outline"
                 onClick={() => handleLinkAccount(provider.key)}
-                disabled={isPending}
+                disabled={isPending || linkingProvider !== null}
                 className="w-full justify-start"
               >
                 <Icon className="mr-2 h-5 w-5" /> Link {provider.name}
