@@ -55,8 +55,30 @@ export const adminCreateUserSchema = z.object({
   onboarding_completed: z.boolean().default(false).optional(),
 });
 
-export const accountPreferencesSchema = z.object({
+// Schema for form validation (used by react-hook-form)
+export const accountPreferencesFormSchema = z.object({
   notifications_enabled: z.boolean().default(true).optional(),
   preferred_language: z.string().min(2).max(10).default('en').optional(),
   interface_density: z.enum(['compact', 'default', 'comfortable']).default('default').optional(),
 });
+
+export const accountPreferencesSchema = z.object({
+  notifications_enabled: z.preprocess(
+    value => value === 'on' || value === true || value === "true",
+    z.boolean().default(true)
+  ).optional(),
+  preferred_language: z.string().min(2).max(10).default('en').optional(),
+  interface_density: z.enum(['compact', 'default', 'comfortable']).default('default').optional(),
+});
+
+export type AccountPreferencesFormData = z.infer<typeof accountPreferencesFormSchema>;
+
+export const changePasswordSchema = z.object({
+  newPassword: z.string().min(8, { message: 'New password must be at least 8 characters long.' }),
+  confirmNewPassword: z.string(),
+}).refine(data => data.newPassword === data.confirmNewPassword, {
+  message: "New passwords don't match.",
+  path: ['confirmNewPassword'],
+});
+
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;

@@ -44,8 +44,8 @@ export interface OnboardingDataStep1 {
     display_name?: string;
     avatar_url?: string;
 }
-export interface OnboardingDataStep2 extends UserCustomPreferences {}
-export interface OnboardingDataStep3 extends UserCustomPreferences {}
+export interface OnboardingDataStep2 extends UserCustomPreferences { }
+export interface OnboardingDataStep3 extends UserCustomPreferences { }
 
 
 // Types for User Activity Logging
@@ -57,5 +57,7 @@ export type UserActivityLog = Database['public']['Tables']['user_activity_logs']
 
 // Generic type for server action results with potential errors
 export type ActionResult<T = null> =
-	| { success: true; data: T }
-	| { success: false; error: { message: string; code?: string } };
+    | { success: true; data: T }
+    | { success: false; error: { message: string; code?: string } };
+
+

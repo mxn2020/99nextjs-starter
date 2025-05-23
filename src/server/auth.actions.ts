@@ -5,7 +5,9 @@ import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { loginSchema, signupSchema, magicLinkSchema } from '@/lib/schemas'; // Assuming you have these
+import { loginSchema, signupSchema, magicLinkSchema, changePasswordSchema } from '@/lib/schemas';
+import { revalidatePath } from 'next/cache';
+import { logUserActivity } from '@/lib/activityLog';
 
 export async function loginWithPassword(prevState: any, formData: FormData) {
   const cookieStore = await cookies();
@@ -192,4 +194,43 @@ export async function getCurrentUser() {
 export async function getUserRole() {
   const user = await getCurrentUser();
   return user?.profile?.role || null;
+}
+
+export async function changePasswordAction(prevState: any, formData: FormData) {
+  const cookieStore = await cookies();
+  const supabase = await createSupabaseServerClient(cookieStore);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { message: 'User not authenticated.', success: false, errors: null };
+  }
+
+  const result = changePasswordSchema.safeParse(Object.fromEntries(formData));
+
+  if (!result.success) {
+    return { message: 'Invalid data.', errors: result.error.flatten().fieldErrors, success: false };
+  }
+
+  const { newPassword } = result.data;
+
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  if (updateError) {
+    console.error("Change password error:", updateError);
+    return { message: `Failed to update password: ${updateError.message}`, success: false, errors: null };
+  }
+
+  await logUserActivity({
+    actor_id: user.id,
+    user_id: user.id,
+    activity_type: 'USER_PASSWORD_UPDATE',
+    description: 'User updated their password.',
+    target_resource_id: user.id,
+    target_resource_type: 'user_security' // Using 'user_security' as a general type for such actions
+  });
+
+  revalidatePath('/dashboard/settings');
+  return { message: 'Password updated successfully!', success: true, errors: null };
 }

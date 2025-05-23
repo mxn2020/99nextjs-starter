@@ -10,15 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useActionState, useEffect, useRef } from "react";
+import { startTransition, useActionState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { accountPreferencesSchema } from "@/lib/schemas";
+import { accountPreferencesFormSchema, type AccountPreferencesFormData } from "@/lib/schemas";
 import type { UserCustomPreferences } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-
-type AccountPreferencesFormData = z.infer<typeof accountPreferencesSchema>;
 
 type FormState = {
   message: string | null;
@@ -52,7 +50,7 @@ export default function AccountPreferencesForm({ currentPreferences }: AccountPr
   );
 
   const form = useForm<AccountPreferencesFormData>({
-    resolver: zodResolver(accountPreferencesSchema),
+    resolver: zodResolver(accountPreferencesFormSchema),
     defaultValues: {
       notifications_enabled: currentPreferences?.notifications_enabled ?? true,
       preferred_language: currentPreferences?.preferred_language ?? 'en',
@@ -99,7 +97,9 @@ export default function AccountPreferencesForm({ currentPreferences }: AccountPr
           if (formRef.current) {
             // Create FormData and submit if using useActionState with react-hook-form for client validation
             const formData = new FormData(formRef.current);
-            formAction(formData);
+            startTransition(() => { // Wrap formAction call in startTransition
+              formAction(formData);
+            });
           }
         })}
       >
