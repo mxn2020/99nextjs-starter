@@ -174,21 +174,21 @@ export async function logout() {
 export async function getCurrentUser() {
   const cookieStore = await cookies();
   const supabase = await createSupabaseServerClient(cookieStore);
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return null;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
 
   const { data: userProfile, error } = await supabase
     .from('users')
     .select('*') // Select all profile fields
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (error && error.code !== 'PGRST116') { //PGRST116: 0 rows (profile not found)
     console.error('Error fetching user profile:', error);
-    return { ...session.user, profile: null }; // Return auth user even if profile fetch fails
+    return { ...user, profile: null }; // Return auth user even if profile fetch fails
   }
 
-  return { ...session.user, profile: userProfile };
+  return { ...user, profile: userProfile };
 }
 
 export async function getUserRole() {

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useTransition, useEffect }
-from 'react';
+  from 'react';
 import { Button } from '@/components/ui/button';
 import { loginWithOAuth } from '@/server/auth.actions';
 import { unlinkOAuthAccountAction } from '@/server/user.actions';
@@ -46,48 +46,6 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
   const [identities, setIdentities] = useState<UserIdentity[]>(initialIdentities);
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
-
-  // Function to refresh identities from Supabase
-const refreshIdentities = async () => {
-  // Consider adding a loading state if not already present
-  const { data: { user }, error } = await supabase.auth.getUser(); // supabase is createSupabaseBrowserClient()
-
-  if (error) {
-    toast.error("Failed to refresh account links: " + error.message);
-    // Avoid clearing identities on a fetch error; retain current (possibly server-rendered) state
-    return;
-  }
-
-  if (user?.identities) {
-    setIdentities(user.identities as UserIdentity[]);
-  } else if (user && !user.identities) {
-    // User session exists, but no identities (e.g., only email/password)
-    setIdentities([]);
-  } else if (!user) {
-    // No user session found during this client-side check.
-    // This is where "Auth session missing!" occurs.
-    // It's crucial not to clear `initialIdentities` if this is a transient issue.
-    // Only clear if it's a definitive sign-out, which `onAuthStateChange` might handle better.
-    toast.error("Failed to refresh account links: Client-side session check failed. Data might be stale.");
-    // Avoid calling `setIdentities([])` here unless you are sure the user is logged out.
-    // If `initialIdentities` were populated from the server, you might want to keep them
-    // until an explicit logout event.
-  }
-};
-  // Periodically check for identities changes or upon specific triggers
-  // For example, after returning to the page from OAuth flow
-  useEffect(() => {
-    const handleFocus = () => {
-      refreshIdentities();
-    };
-    window.addEventListener('focus', handleFocus);
-    refreshIdentities(); // Initial fetch too
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
 
   const handleLinkAccount = async (provider: 'github' | 'google') => {
     startTransition(async () => {
