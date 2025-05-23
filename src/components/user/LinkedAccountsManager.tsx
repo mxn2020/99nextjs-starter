@@ -4,7 +4,7 @@
 import { useState, useTransition, useEffect }
   from 'react';
 import { Button } from '@/components/ui/button';
-import { loginWithOAuth } from '@/server/auth.actions';
+import { linkOAuthAccount } from '@/server/auth.actions';
 import { unlinkOAuthAccountAction } from '@/server/user.actions';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
 import { toast } from 'sonner';
@@ -50,7 +50,7 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
   const handleLinkAccount = async (provider: 'github' | 'google') => {
     startTransition(async () => {
       // Redirect to settings page after linking, with a query param for feedback
-      const result = await loginWithOAuth(provider, `/dashboard/settings?linked_provider=${provider}`);
+      const result = await linkOAuthAccount(provider);
       if (result?.error) {
         toast.error(`Failed to link ${provider}: ${result.error}`);
       }
