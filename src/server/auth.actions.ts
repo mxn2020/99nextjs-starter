@@ -151,29 +151,25 @@ export async function linkOAuthAccount(provider: 'github' | 'google') {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3099';
   const authRedirectTo = `${appUrl}/auth/callback?action=link&next=/dashboard/settings`;
 
-  try {
-    const { data, error } = await supabase.auth.linkIdentity({
-      provider,
-      options: {
-        redirectTo: authRedirectTo,
-        scopes: provider === 'github' ? 'user:email' : 'email profile',
-      },
-    });
+  const { data, error } = await supabase.auth.linkIdentity({
+    provider,
+    options: {
+      redirectTo: authRedirectTo,
+      scopes: provider === 'github' ? 'user:email' : 'email profile',
+    },
+  });
 
-    if (error) {
-      console.error(`Link ${provider} error:`, error);
-      return { error: error.message };
-    }
-
-    if (data.url) {
-      redirect(data.url);
-    }
-    
-    return { success: true };
-  } catch (err: any) {
-    console.error(`Link ${provider} exception:`, err);
-    return { error: err.message || 'Account linking failed' };
+  if (error) {
+    console.error(`Link ${provider} error:`, error);
+    return { error: error.message };
   }
+
+  if (data.url) {
+    // Don't wrap redirect in try-catch - let it throw naturally
+    redirect(data.url);
+  }
+  
+  return { success: true };
 }
 
 export async function loginWithMagicLink(prevState: any, formData: FormData) {
