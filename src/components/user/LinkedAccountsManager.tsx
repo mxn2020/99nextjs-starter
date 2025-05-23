@@ -51,25 +51,24 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
 
   const handleLinkAccount = async (provider: 'github' | 'google') => {
     setLinkingProvider(provider);
+    console.log('Starting link for:', provider);
 
-    // Don't use startTransition for server actions that redirect
     try {
       const result = await linkOAuthAccount(provider);
+      console.log('Link result:', result);
 
-      // Only handle actual errors, not redirects
       if (result?.error && result.error !== 'NEXT_REDIRECT') {
         toast.error(`Failed to link ${provider}: ${result.error}`);
         setLinkingProvider(null);
       }
-      // If we get here without an error, the redirect should happen
     } catch (error: any) {
-      // Only catch actual errors, not Next.js redirects
+      console.log('Caught error:', error);
+
       if (error?.message !== 'NEXT_REDIRECT' && !error?.digest?.includes('NEXT_REDIRECT')) {
         console.error('OAuth error:', error);
         toast.error(`Failed to link ${provider}: ${error.message || 'Unknown error'}`);
         setLinkingProvider(null);
       }
-      // If it's a NEXT_REDIRECT error, let it continue (this is expected behavior)
     }
   };
 
