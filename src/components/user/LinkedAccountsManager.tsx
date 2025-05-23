@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useTransition, useEffect }
-from 'react';
+  from 'react';
 import { Button } from '@/components/ui/button';
 import { loginWithOAuth } from '@/server/auth.actions';
 import { unlinkOAuthAccountAction } from '@/server/user.actions';
@@ -49,31 +49,68 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
 
   // Function to refresh identities from Supabase
   const refreshIdentities = async () => {
-    const { data: { user } , error } = await supabase.auth.getUser();
+    // Consider adding a loading state if not already present
+    const { data: { user }, error } = await supabase.auth.getUser(); // supabase is createSupabaseBrowserClient()
+
     if (error) {
-        toast.error("Failed to refresh account links: " + error.message);
-        return;
+      toast.error("Failed to refresh account links: " + error.message);
+      // Avoid clearing identities on a fetch error; retain current (possibly server-rendered) state
+      return;
     }
+
     if (user?.identities) {
-        setIdentities(user.identities as UserIdentity[]);
-    } else {
-        setIdentities([]);
+      setIdentities(user.identities as UserIdentity[]);
+    } else if (user && !user.identities) {
+      // User session exists, but no identities (e.g., only email/password)
+      setIdentities([]);
+    } else if (!user) {
+      // No user session found during this client-side check.
+      // This is where "Auth session missing!" occurs.
+      // It's crucial not to clear `initialIdentities` if this is a transient issue.
+      // Only clear if it's a definitive sign-out, which `onAuthStateChange` might handle better.
+      toast.error("Failed to refresh account links: Client-side session check failed. Data might be stale.");
+      // Avoid calling `setIdentities([])` here unless you are sure the user is logged out.
+      // If `initialIdentities` were populated from the server, you might want to keep them
+      // until an explicit logout event.
     }
   };
 
-  // Periodically check for identities changes or upon specific triggers
-  // For example, after returning to the page from OAuth flow
+  // Inside LinkedAccountsManager.tsx, adjust the useEffect:
   useEffect(() => {
-    const handleFocus = () => {
-      refreshIdentities();
+    setIdentities(initialIdentities); // Trust server-rendered identities initially
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('LinkedAccountsManager auth state change:', event, session);
+      if (session?.user?.identities) {
+        setIdentities(session.user.identities as UserIdentity[]);
+      } else if (event === 'SIGNED_OUT' || !session?.user) {
+        setIdentities([]);
+      } else if (session?.user && (!session.user.identities || session.user.identities.length === 0)) {
+        setIdentities([]); // User exists but has no external identities
+      }
+    });
+
+    // To catch updates if the page was already focused when onAuthStateChange fires,
+    // or for an explicit refresh on focus:
+    const handleFocus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.identities) {
+        setIdentities(session.user.identities as UserIdentity[]);
+      } else if (!session?.user) {
+        setIdentities([]);
+      } else if (session?.user && (!session.user.identities || session.user.identities.length === 0)) {
+        setIdentities([]);
+      }
     };
+
     window.addEventListener('focus', handleFocus);
-    refreshIdentities(); // Initial fetch too
+    handleFocus(); // Initial call on mount as well
+
     return () => {
+      authListener?.subscription.unsubscribe();
       window.removeEventListener('focus', handleFocus);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialIdentities, supabase]);
 
 
   const handleLinkAccount = async (provider: 'github' | 'google') => {
@@ -108,6 +145,8 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
 
   const linkedProviderKeys = identities.map(id => id.provider);
 
+
+
   return (
     <div className="space-y-4">
       {identities.length > 0 ? (
@@ -115,6 +154,11 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
           {identities.map((identity) => {
             const providerInfo = getProviderInfo(identity.provider);
             const IconComponent = providerInfo?.icon || LinkIcon;
+
+            const isEmailIdentity = identity.provider === 'email';
+            const isPrimaryPasswordIdentity = identity.provider === 'email';
+            const isUnlinkable = identity.provider !== 'email';
+
             return (
               <li key={identity.id} className="flex items-center justify-between p-3 border rounded-md">
                 <div className="flex items-center space-x-3">
@@ -122,13 +166,13 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
                   <div>
                     <span className="font-medium capitalize">{providerInfo?.name || identity.provider}</span>
                     {identity.identity_data?.email && (
-                       <p className="text-xs text-muted-foreground">{identity.identity_data.email}</p>
+                      <p className="text-xs text-muted-foreground">{identity.identity_data.email}</p>
                     )}
                   </div>
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" disabled={isPending}>
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" disabled={isPending || !isUnlinkable}>
                       <Trash2 className="mr-1 h-4 w-4" /> Unlink
                     </Button>
                   </AlertDialogTrigger>
@@ -143,7 +187,7 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
                       <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => handleUnlinkAccount(identity)}
-                        disabled={isPending}
+                        disabled={isPending || !isUnlinkable}
                         className="bg-destructive hover:bg-destructive/90"
                       >
                         {isPending ? 'Unlinking...' : 'Unlink'}
