@@ -96,7 +96,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string | null
-          email: string
+          email: string | null
           id: string
           onboarding_completed: boolean
           onboarding_step: number
@@ -108,7 +108,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
-          email: string
+          email?: string | null
           id: string
           onboarding_completed?: boolean
           onboarding_step?: number
@@ -120,7 +120,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
-          email?: string
+          email?: string | null
           id?: string
           onboarding_completed?: boolean
           onboarding_step?: number
@@ -162,6 +162,10 @@ export type Database = {
         | "ADMIN_SYSTEM_SETTINGS_UPDATE"
         | "GENERAL_ADMIN_ACTION"
         | "GENERAL_USER_ACTION"
+        | "USER_OAUTH_LINK"
+        | "USER_OAUTH_UNLINK"
+        | "USER_DATA_EXPORT_REQUEST"
+        | "USER_ACCOUNT_DELETE"
       user_role: "user" | "admin"
     }
     CompositeTypes: {
@@ -298,6 +302,10 @@ export const Constants = {
         "ADMIN_SYSTEM_SETTINGS_UPDATE",
         "GENERAL_ADMIN_ACTION",
         "GENERAL_USER_ACTION",
+        "USER_OAUTH_LINK",
+        "USER_OAUTH_UNLINK",
+        "USER_DATA_EXPORT_REQUEST",
+        "USER_ACCOUNT_DELETE",
       ],
       user_role: ["user", "admin"],
     },

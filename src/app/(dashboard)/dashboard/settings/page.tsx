@@ -4,8 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { redirect } from 'next/navigation';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import AccountPreferencesForm from '@/components/user/AccountPreferencesForm';
-import type { UserCustomPreferences } from '@/lib/types';
-import ChangePasswordForm from '@/components/user/ChangePasswordForm'; // Import the new form
+import type { UserCustomPreferences, UserIdentity } from '@/lib/types';
+import ChangePasswordForm from '@/components/user/ChangePasswordForm';
+import LinkedAccountsManager from '@/components/user/LinkedAccountsManager'; // New
+import ExportDataSection from '@/components/user/ExportDataSection'; // New
+import DeleteAccountSection from '@/components/user/DeleteAccountSection'; // New
+import { Separator } from '@/components/ui/separator';
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -13,11 +17,12 @@ export default async function SettingsPage() {
   if (!user || !user.profile) {
     redirect('/login?message=User not found');
   }
-  
+
   const userPreferences = user.profile.preferences as UserCustomPreferences || {};
+  const userIdentities = user.identities as UserIdentity[] || [];
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-8 pb-12">
       <Card>
         <CardHeader>
           <CardTitle>Account Information</CardTitle>
@@ -27,6 +32,10 @@ export default async function SettingsPage() {
           <div>
             <h3 className="text-lg font-medium">Email Address</h3>
             <p className="text-sm text-muted-foreground">{user.email}</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-medium">User ID</h3>
+            <p className="text-sm text-muted-foreground font-mono">{user.id}</p>
           </div>
           <div>
             <h3 className="text-lg font-medium">User Role</h3>
@@ -39,20 +48,6 @@ export default async function SettingsPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>Security</CardTitle>
-            <CardDescription>Manage your account security settings.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <h3 className="text-lg font-medium mb-3">Change Password</h3>
-            <ChangePasswordForm />
-          </div>
-        </CardContent>
-      </Card>
-
-
-      <Card>
-        <CardHeader>
           <CardTitle>Appearance Settings</CardTitle>
           <CardDescription>Customize the application appearance.</CardDescription>
         </CardHeader>
@@ -61,17 +56,55 @@ export default async function SettingsPage() {
             <ThemeToggle />
         </CardContent>
       </Card>
-      
-      {/* TODO: Add sections for managing linked OAuth accounts, exporting data, deleting account */}
+
       <Card>
         <CardHeader>
-          <CardTitle>Danger Zone</CardTitle>
+          <CardTitle>Security</CardTitle>
+          <CardDescription>Manage your account security settings.</CardDescription>
         </CardHeader>
-        <CardContent>
-            <p className="text-sm text-muted-foreground">
-                (Actions like deleting account will be here.)
-                  {/* TODO: Implement Delete Account functionality */}
-            </p>
+        <CardContent className="space-y-6">
+          <div>
+            <h3 className="text-lg font-medium mb-3">Change Password</h3>
+            {user.app_metadata.provider === 'email' ? (
+                <ChangePasswordForm />
+            ) : (
+                <p className="text-sm text-muted-foreground">
+                    You are signed in with an OAuth provider ({user.app_metadata.provider}).
+                    Password management is handled by your OAuth provider.
+                </p>
+            )}
+          </div>
+          <Separator />
+          <div>
+            <h3 className="text-lg font-medium mb-3">Linked Accounts</h3>
+             <LinkedAccountsManager identities={userIdentities} currentUserId={user.id}/>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+            <CardTitle>Data Management</CardTitle>
+            <CardDescription>Manage your personal data within the application.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <div>
+                <h3 className="text-lg font-medium mb-3">Export Your Data</h3>
+                <ExportDataSection />
+            </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          <CardDescription>These actions are permanent and cannot be undone.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <h3 className="text-lg font-medium text-destructive mb-3">Delete Account</h3>
+            <DeleteAccountSection />
+          </div>
         </CardContent>
       </Card>
     </div>
