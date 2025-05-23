@@ -26,12 +26,12 @@ const supabaseConfigSchema = z.object({
     // Storage key for auth tokens
     key: z.string({
       description: 'Storage key name for the Supabase Auth Token',
-    }).default(process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key-dev'),
+    }).default(process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key'),
     
     // Cookie name for server-side auth
     cookieName: z.string({
       description: 'Cookie name for server-side authentication',
-    }).default(process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key-dev'),
+    }).default(process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key'),
     
     // Cookie options
     cookieOptions: z.object({
@@ -64,7 +64,7 @@ export type SupabaseConfig = z.infer<typeof supabaseConfigSchema>;
  * @returns Validated Supabase configuration object
  */
 export function getSupabaseConfig(overrides?: Partial<SupabaseConfig>): SupabaseConfig {
-  const tokenStorageKey = process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key-dev'
+  const tokenStorageKey = process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key'
 
   // Get environment variables with fallbacks
   const configFromEnv = {

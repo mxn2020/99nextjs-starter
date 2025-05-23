@@ -24,29 +24,29 @@ export function AuthUserProvider({ children }: { children: React.ReactNode }) {
     const fetchUserSessionAndProfile = async () => {
       setIsLoading(true);
       setError(null);
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-      if (sessionError) {
-        console.error("Error fetching session:", sessionError);
-        setError(sessionError);
+      if (userError) {
+        console.error("Error fetching user:", userError);
+        setError(userError);
         setIsLoading(false);
         return;
       }
 
-      if (session?.user) {
+      if (user) {
         const { data: userProfile, error: profileError } = await supabase
           .from('users')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', user.id)
           .single();
 
         if (profileError && profileError.code !== 'PGRST116') { // PGRST116: 0 rows
           console.error('Error fetching user profile in hook:', profileError);
           // Potentially set user without profile or handle error
-          setUser({ ...session.user, profile: null });
+          setUser({ ...user, profile: null });
           setError(profileError);
         } else {
-          setUser({ ...session.user, profile: userProfile as UserProfile | null });
+          setUser({ ...user, profile: userProfile as UserProfile | null });
         }
       } else {
         setUser(null);

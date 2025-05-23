@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useTransition, useEffect }
-  from 'react';
+from 'react';
 import { Button } from '@/components/ui/button';
 import { loginWithOAuth } from '@/server/auth.actions';
 import { unlinkOAuthAccountAction } from '@/server/user.actions';
@@ -48,69 +48,45 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
   const router = useRouter();
 
   // Function to refresh identities from Supabase
-  const refreshIdentities = async () => {
-    // Consider adding a loading state if not already present
-    const { data: { user }, error } = await supabase.auth.getUser(); // supabase is createSupabaseBrowserClient()
+const refreshIdentities = async () => {
+  // Consider adding a loading state if not already present
+  const { data: { user }, error } = await supabase.auth.getUser(); // supabase is createSupabaseBrowserClient()
 
-    if (error) {
-      toast.error("Failed to refresh account links: " + error.message);
-      // Avoid clearing identities on a fetch error; retain current (possibly server-rendered) state
-      return;
-    }
+  if (error) {
+    toast.error("Failed to refresh account links: " + error.message);
+    // Avoid clearing identities on a fetch error; retain current (possibly server-rendered) state
+    return;
+  }
 
-    if (user?.identities) {
-      setIdentities(user.identities as UserIdentity[]);
-    } else if (user && !user.identities) {
-      // User session exists, but no identities (e.g., only email/password)
-      setIdentities([]);
-    } else if (!user) {
-      // No user session found during this client-side check.
-      // This is where "Auth session missing!" occurs.
-      // It's crucial not to clear `initialIdentities` if this is a transient issue.
-      // Only clear if it's a definitive sign-out, which `onAuthStateChange` might handle better.
-      toast.error("Failed to refresh account links: Client-side session check failed. Data might be stale.");
-      // Avoid calling `setIdentities([])` here unless you are sure the user is logged out.
-      // If `initialIdentities` were populated from the server, you might want to keep them
-      // until an explicit logout event.
-    }
-  };
-
-  // Inside LinkedAccountsManager.tsx, adjust the useEffect:
+  if (user?.identities) {
+    setIdentities(user.identities as UserIdentity[]);
+  } else if (user && !user.identities) {
+    // User session exists, but no identities (e.g., only email/password)
+    setIdentities([]);
+  } else if (!user) {
+    // No user session found during this client-side check.
+    // This is where "Auth session missing!" occurs.
+    // It's crucial not to clear `initialIdentities` if this is a transient issue.
+    // Only clear if it's a definitive sign-out, which `onAuthStateChange` might handle better.
+    toast.error("Failed to refresh account links: Client-side session check failed. Data might be stale.");
+    // Avoid calling `setIdentities([])` here unless you are sure the user is logged out.
+    // If `initialIdentities` were populated from the server, you might want to keep them
+    // until an explicit logout event.
+  }
+};
+  // Periodically check for identities changes or upon specific triggers
+  // For example, after returning to the page from OAuth flow
   useEffect(() => {
-    setIdentities(initialIdentities); // Trust server-rendered identities initially
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('LinkedAccountsManager auth state change:', event, session);
-      if (session?.user?.identities) {
-        setIdentities(session.user.identities as UserIdentity[]);
-      } else if (event === 'SIGNED_OUT' || !session?.user) {
-        setIdentities([]);
-      } else if (session?.user && (!session.user.identities || session.user.identities.length === 0)) {
-        setIdentities([]); // User exists but has no external identities
-      }
-    });
-
-    // To catch updates if the page was already focused when onAuthStateChange fires,
-    // or for an explicit refresh on focus:
-    const handleFocus = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.identities) {
-        setIdentities(session.user.identities as UserIdentity[]);
-      } else if (!session?.user) {
-        setIdentities([]);
-      } else if (session?.user && (!session.user.identities || session.user.identities.length === 0)) {
-        setIdentities([]);
-      }
+    const handleFocus = () => {
+      refreshIdentities();
     };
-
     window.addEventListener('focus', handleFocus);
-    handleFocus(); // Initial call on mount as well
-
+    refreshIdentities(); // Initial fetch too
     return () => {
-      authListener?.subscription.unsubscribe();
       window.removeEventListener('focus', handleFocus);
     };
-  }, [initialIdentities, supabase]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   const handleLinkAccount = async (provider: 'github' | 'google') => {
@@ -144,8 +120,6 @@ export default function LinkedAccountsManager({ identities: initialIdentities, c
   };
 
   const linkedProviderKeys = identities.map(id => id.provider);
-
-
 
   return (
     <div className="space-y-4">
