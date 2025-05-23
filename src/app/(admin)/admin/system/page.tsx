@@ -1,14 +1,38 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-// import { saveSystemSettingsAction } from '@/server/admin.actions'; // TODO: Implement this action
+import { getSystemSettings } from '@/server/admin.actions'; 
+import SystemSettingsForm from '@/components/admin/SystemSettingsForm'; 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+
+export const dynamic = 'force-dynamic'; // Ensure fresh data on each request
 
 export default async function AdminSystemSettingsPage() {
-  // Fetch current system settings here
-  // const currentSettings = await getSystemSettings(); // Example function
+  const { settings, error } = await getSystemSettings();
 
+  // Case 1: Critical error fetching settings (e.g., DB connection issue, admin auth failure)
+  if (error && !settings) { 
+      return (
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>System Settings</CardTitle>
+                    <CardDescription>Configure global application settings and features.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error Loading Settings</AlertTitle>
+                    <AlertDescription>{error || "Could not load system settings. Please try again later."}</AlertDescription>
+                    </Alert>
+                </CardContent>
+            </Card>
+        </div>
+      );
+  }
+  
+  // Case 2: Settings might be "not found" but an empty object is returned, allowing form to use defaults.
+  // Or settings are successfully fetched.
   return (
     <div className="space-y-6">
       <Card>
@@ -17,43 +41,17 @@ export default async function AdminSystemSettingsPage() {
           <CardDescription>Configure global application settings and features.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form /* action={saveSystemSettingsAction} */ className="space-y-8">
-            <div>
-              <h3 className="text-lg font-medium mb-2">Feature Flags</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 border rounded-md">
-                  <div>
-                    <Label htmlFor="feature-new-dashboard" className="font-semibold">Enable New Dashboard UI</Label>
-                    <p className="text-xs text-muted-foreground">Toggle the new experimental dashboard design for all users.</p>
-                  </div>
-                  <Switch id="feature-new-dashboard" name="feature_new_dashboard" /* defaultChecked={currentSettings?.featureNewDashboard} */ />
-                </div>
-                <div className="flex items-center justify-between p-3 border rounded-md">
-                  <div>
-                    <Label htmlFor="feature-maintenance-mode" className="font-semibold">Enable Maintenance Mode</Label>
-                    <p className="text-xs text-muted-foreground">Temporarily disable access to the app for non-admins.</p>
-                  </div>
-                  <Switch id="feature-maintenance-mode" name="feature_maintenance_mode" /* defaultChecked={currentSettings?.maintenanceMode} */ />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium mb-2">Email Configuration</h3>
-               <p className="text-sm text-muted-foreground">
-                (Placeholder for email service settings, template management, etc.)
-              </p>
-              {/* Inputs for SMTP server, sender email, etc. */}
-            </div>
-            
-            <div className="pt-4">
-              <Button type="submit" disabled>Save Settings</Button> {/* Disabled until action is implemented */}
-               <p className="text-xs text-muted-foreground mt-2">System settings save action is not yet implemented.</p>
-            </div>
-          </form>
+            {error && settings && Object.keys(settings).length === 0 && ( 
+                 <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Notice</AlertTitle>
+                    <AlertDescription>{error} Form will use default values. Saving will create the settings entry.</AlertDescription>
+                </Alert>
+            )}
+          {/* Pass settings (even if empty object from error case) to the form */}
+          <SystemSettingsForm currentSettings={settings || {}} />
         </CardContent>
       </Card>
     </div>
   );
 }
-    
