@@ -11,6 +11,7 @@ export interface UserCustomPreferences {
     bio?: string | null;
     feature_beta_access?: boolean;
     privacy_level?: 'public' | 'private' | 'friends_only';
+    interface_density?: 'compact' | 'default' | 'comfortable';
     // Add other preference keys here
 }
 

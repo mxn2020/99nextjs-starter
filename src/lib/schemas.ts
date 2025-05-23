@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 
 export const loginSchema = z.object({
@@ -32,17 +31,15 @@ export const onboardingStep1Schema = z.object({
 });
 
 export const onboardingStep2Schema = z.object({
-  notifications_enabled: z.preprocess(value => value === 'on' || value === true, z.boolean().default(true)),
+  notifications_enabled: z.preprocess(value => value === 'on' || value === true || value === "true", z.boolean().default(true)),
   contact_method: z.enum(['email', 'inapp', 'none']).default('email'),
   preferred_language: z.string().min(2, "Language code too short").max(10, "Language code too long").optional().default('en'),
-  // TODO: Add more preferences as needed
 });
 
 export const onboardingStep3Schema = z.object({
   bio: z.string().max(250, "Bio cannot exceed 250 characters.").optional().nullable(),
-  feature_beta_access: z.preprocess(value => value === 'on' || value === true, z.boolean().default(false)),
+  feature_beta_access: z.preprocess(value => value === 'on' || value === true || value === "true", z.boolean().default(false)),
   privacy_level: z.enum(['public', 'private', 'friends_only']).default('private'),
-  // TODO: Add more customizations as needed
 });
 
 export const profileUpdateSchema = z.object({
@@ -56,4 +53,10 @@ export const adminCreateUserSchema = z.object({
   role: z.enum(['user', 'admin']).default('user'),
   display_name: z.string().min(2, 'Display name is too short.').max(50, 'Display name is too long.').optional().or(z.literal('')),
   onboarding_completed: z.boolean().default(false).optional(),
+});
+
+export const accountPreferencesSchema = z.object({
+  notifications_enabled: z.boolean().default(true).optional(),
+  preferred_language: z.string().min(2).max(10).default('en').optional(),
+  interface_density: z.enum(['compact', 'default', 'comfortable']).default('default').optional(),
 });
