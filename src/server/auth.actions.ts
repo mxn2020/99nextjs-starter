@@ -96,7 +96,7 @@ export async function signupWithPassword(prevState: any, formData: FormData) {
 export async function loginWithOAuth(provider: 'github' | 'google', redirectTo?: string) {
   const cookieStore = await cookies();
   const supabase = await createSupabaseServerClient(cookieStore);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.google.com/search?q=http://localhost:3099';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3099';
   let authRedirectTo = `${appUrl}/auth/callback`; // Ensure this matches your Supabase dashboard and route handler path
 
   if (redirectTo) {
@@ -136,7 +136,7 @@ export async function loginWithMagicLink(prevState: any, formData: FormData) {
   }
   const { email } = result.data;
 
-  let emailRedirectTo = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.google.com/search?q=http://localhost:3099'}/auth/callback`;
+  let emailRedirectTo = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3099'}/auth/callback`;
   if (redirectToPath) {
     const params = new URLSearchParams();
     params.set('next', redirectToPath);

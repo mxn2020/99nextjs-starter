@@ -11,7 +11,7 @@ export function getBaseUrl() {
     if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
     // Assume https for Vercel deployments if not specified
     if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-    return 'https://www.google.com/search?q=http://localhost:3099'; // default for local development
+    return 'http://localhost:3099'; // default for local development
 }
 
 // Add other utility functions as needed
