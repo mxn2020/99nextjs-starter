@@ -179,11 +179,10 @@ export async function unlinkOAuthAccountAction(identity: UserIdentity) {
   
   // Cannot unlink the last identity if no password is set
   if (user.identities && user.identities.length === 1 && user.app_metadata.provider !== 'email') {
-    // Get all users and filter by email on the client side
-    const { data, error: getUserError } = await supabase.auth.admin.listUsers();
-    const authUsers = data?.users?.filter(u => u.email === user.email) || [];
+    // Get user directly by ID for verification
+    const { data: userData, error: getUserError } = await supabase.auth.admin.getUserById(user.id);
     
-    if (getUserError || authUsers.length === 0) {
+    if (getUserError || !userData || !userData.user) {
       return { success: false, error: "Could not verify user's primary authentication method." };
     }
     // This check is a bit complex as `passwordHash` is not directly exposed.
