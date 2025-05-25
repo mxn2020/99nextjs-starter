@@ -1,4 +1,3 @@
-
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import ProfileForm from '@/components/user/ProfileForm'
 
@@ -46,7 +45,8 @@ describe('ProfileForm', () => {
   })
 
   it('should display success message when profile updated', async () => {
-    const { updateUserProfileServerAction } = require('@/server/user.actions')
+    const userActions = await import('@/server/user.actions')
+    const updateUserProfileServerAction = userActions.updateUserProfileServerAction as jest.Mock
     updateUserProfileServerAction.mockReturnValue(Promise.resolve({
       message: 'Profile updated successfully!',
       success: true,
@@ -67,7 +67,8 @@ describe('ProfileForm', () => {
   })
 
   it('should display error message when update fails', async () => {
-    const { updateUserProfileServerAction } = require('@/server/user.actions')
+    const userActions = await import('@/server/user.actions')
+    const updateUserProfileServerAction = userActions.updateUserProfileServerAction as jest.Mock
     updateUserProfileServerAction.mockReturnValue(Promise.resolve({
       message: 'Failed to update profile',
       success: false,
@@ -88,7 +89,8 @@ describe('ProfileForm', () => {
   })
 
   it('should show field errors when validation fails', async () => {
-    const { updateUserProfileServerAction } = require('@/server/user.actions')
+    const userActions = await import('@/server/user.actions')
+    const updateUserProfileServerAction = userActions.updateUserProfileServerAction as jest.Mock
     updateUserProfileServerAction.mockReturnValue(Promise.resolve({
       message: 'Validation failed',
       success: false,

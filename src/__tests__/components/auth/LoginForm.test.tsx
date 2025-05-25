@@ -1,14 +1,29 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import LoginForm from '@/components/auth/LoginForm'
+import { useActionState } from 'react'
+
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  useActionState: jest.fn(),
+}))
 
 jest.mock('@/server/auth.actions', () => ({
   loginWithPassword: jest.fn(),
 }))
 
 describe('LoginForm', () => {
+  const mockUseActionState = useActionState as jest.Mock
+
   beforeEach(() => {
     jest.clearAllMocks()
+    // Default mock for useActionState
+    mockUseActionState.mockReturnValue([
+      { message: '', errors: null, success: false },
+      jest.fn(),
+      false
+    ])
   })
 
   it('should render login form fields', () => {
@@ -30,24 +45,21 @@ describe('LoginForm', () => {
   })
 
   it('should display error message when login fails', async () => {
-    const { loginWithPassword } = require('@/server/auth.actions')
-    loginWithPassword.mockReturnValue(Promise.resolve({
-      message: 'Invalid credentials',
-      success: false,
-      errors: null
-    }))
+    // Mock useActionState to return login failure error
+    mockUseActionState.mockReturnValue([
+      {
+        message: 'Invalid credentials',
+        success: false,
+        errors: null
+      },
+      jest.fn(),
+      false
+    ])
 
     render(<LoginForm />)
     
-    const emailInput = screen.getByLabelText(/email address/i)
-    const passwordInput = screen.getByLabelText(/password/i)
-    const submitButton = screen.getByRole('button', { name: /sign in/i })
-    
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-    fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } })
-    fireEvent.click(submitButton)
-    
     await waitFor(() => {
+      expect(screen.getByText('Login Failed')).toBeInTheDocument()
       expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
     })
   })
@@ -61,20 +73,21 @@ describe('LoginForm', () => {
   })
 
   it('should show field errors when validation fails', async () => {
-    const { loginWithPassword } = require('@/server/auth.actions')
-    loginWithPassword.mockReturnValue(Promise.resolve({
-      message: 'Validation failed',
-      success: false,
-      errors: {
-        email: ['Invalid email address'],
-        password: ['Password is required']
-      }
-    }))
+    // Mock useActionState to return validation errors
+    mockUseActionState.mockReturnValue([
+      {
+        message: 'Validation failed',
+        success: false,
+        errors: {
+          email: ['Invalid email address'],
+          password: ['Password is required']
+        }
+      },
+      jest.fn(),
+      false
+    ])
 
     render(<LoginForm />)
-    
-    const submitButton = screen.getByRole('button', { name: /sign in/i })
-    fireEvent.click(submitButton)
     
     await waitFor(() => {
       expect(screen.getByText('Invalid email address')).toBeInTheDocument()

@@ -4,6 +4,9 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 jest.mock('@/lib/supabase/server')
+jest.mock('@/lib/activityLog', () => ({
+  logUserActivity: jest.fn(),
+}))
 jest.mock('next/navigation', () => ({
   redirect: jest.fn(),
 }))
@@ -14,6 +17,17 @@ jest.mock('next/headers', () => ({
   cookies: jest.fn(() => Promise.resolve(new Map())),
 }))
 
+const mockSingle = jest.fn()
+const mockEq = jest.fn(() => ({ single: mockSingle }))
+const mockSelect = jest.fn(() => ({ eq: mockEq }))
+const mockUpdate = jest.fn(() => ({ eq: jest.fn() }))
+const mockInsert = jest.fn(() => ({ select: jest.fn() }))
+const mockFrom = jest.fn(() => ({
+  select: mockSelect,
+  update: mockUpdate,
+  insert: mockInsert,
+}))
+
 const mockSupabase = {
   auth: {
     signInWithPassword: jest.fn(),
@@ -22,18 +36,24 @@ const mockSupabase = {
     getUser: jest.fn(),
     getSession: jest.fn(),
   },
-  from: jest.fn(() => ({
-    select: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        single: jest.fn(),
-      })),
+  from: mockFrom,
+  storage: {
+    from: jest.fn(() => ({
+      upload: jest.fn(),
+      getPublicUrl: jest.fn(),
     })),
-  })),
+  },
 }
 
 describe('Auth Actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockSingle.mockClear()
+    mockEq.mockClear()
+    mockSelect.mockClear()
+    mockUpdate.mockClear()
+    mockInsert.mockClear()
+    mockFrom.mockClear()
     ;(createSupabaseServerClient as jest.Mock).mockResolvedValue(mockSupabase)
   })
 
@@ -49,7 +69,7 @@ describe('Auth Actions', () => {
         error: null,
       })
       
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: { onboarding_completed: true },
         error: null,
       })
@@ -78,7 +98,7 @@ describe('Auth Actions', () => {
         error: null,
       })
       
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: { onboarding_completed: false },
         error: null,
       })
@@ -240,7 +260,7 @@ describe('Auth Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: mockProfile,
         error: null,
       })
@@ -272,7 +292,7 @@ describe('Auth Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: null,
         error: { code: 'PGRST116', message: 'No rows found' },
       })
@@ -293,7 +313,7 @@ describe('Auth Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: null,
         error: { code: 'ERROR', message: 'Database error' },
       })

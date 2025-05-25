@@ -8,7 +8,8 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
-  moduleNameMapping: {
+  silent: true,
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
@@ -18,7 +19,6 @@ const customJestConfig = {
     '!src/lib/database.types.ts',
   ],
   moduleDirectories: ['node_modules', '<rootDir>/'],
-  testEnvironment: 'jsdom',
 }
 
 module.exports = createJestConfig(customJestConfig)

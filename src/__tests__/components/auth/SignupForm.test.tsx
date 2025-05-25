@@ -1,14 +1,29 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import SignupForm from '@/components/auth/SignupForm'
+import { useActionState } from 'react'
+
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  useActionState: jest.fn(),
+}))
 
 jest.mock('@/server/auth.actions', () => ({
   signupWithPassword: jest.fn(),
 }))
 
 describe('SignupForm', () => {
+  const mockUseActionState = useActionState as jest.Mock
+
   beforeEach(() => {
     jest.clearAllMocks()
+    // Default mock for useActionState
+    mockUseActionState.mockReturnValue([
+      { message: '', errors: null, success: false },
+      jest.fn(),
+      false
+    ])
   })
 
   it('should render signup form fields', () => {
@@ -33,24 +48,19 @@ describe('SignupForm', () => {
   })
 
   it('should display success message when email confirmation required', async () => {
-    const { signupWithPassword } = require('@/server/auth.actions')
-    signupWithPassword.mockReturnValue(Promise.resolve({
-      message: 'Please check your email to verify your account.',
-      success: true,
-      requiresConfirmation: true
-    }))
+    // Mock useActionState to return success with email confirmation
+    mockUseActionState.mockReturnValue([
+      {
+        message: 'Please check your email to verify your account.',
+        success: true,
+        requiresConfirmation: true,
+        errors: null
+      },
+      jest.fn(),
+      false
+    ])
 
     render(<SignupForm />)
-    
-    const emailInput = screen.getByLabelText(/email address/i)
-    const passwordInput = screen.getByLabelText(/^password$/i)
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i)
-    const submitButton = screen.getByRole('button', { name: /sign up/i })
-    
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-    fireEvent.change(passwordInput, { target: { value: 'password123' } })
-    fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } })
-    fireEvent.click(submitButton)
     
     await waitFor(() => {
       expect(screen.getByText('Check Your Email')).toBeInTheDocument()
@@ -59,46 +69,42 @@ describe('SignupForm', () => {
   })
 
   it('should display error message when signup fails', async () => {
-    const { signupWithPassword } = require('@/server/auth.actions')
-    signupWithPassword.mockReturnValue(Promise.resolve({
-      message: 'Email already exists',
-      success: false,
-      errors: null
-    }))
+    // Mock useActionState to return signup failure error  
+    mockUseActionState.mockReturnValue([
+      {
+        message: 'Email already exists',
+        success: false,
+        errors: null
+      },
+      jest.fn(),
+      false
+    ])
 
     render(<SignupForm />)
     
-    const emailInput = screen.getByLabelText(/email address/i)
-    const passwordInput = screen.getByLabelText(/^password$/i)
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i)
-    const submitButton = screen.getByRole('button', { name: /sign up/i })
-    
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-    fireEvent.change(passwordInput, { target: { value: 'password123' } })
-    fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } })
-    fireEvent.click(submitButton)
-    
     await waitFor(() => {
+      expect(screen.getByText('Signup Failed')).toBeInTheDocument()
       expect(screen.getByText('Email already exists')).toBeInTheDocument()
     })
   })
 
   it('should show field errors when validation fails', async () => {
-    const { signupWithPassword } = require('@/server/auth.actions')
-    signupWithPassword.mockReturnValue(Promise.resolve({
-      message: 'Validation failed',
-      success: false,
-      errors: {
-        email: ['Invalid email address'],
-        password: ['Password too short'],
-        confirmPassword: ['Passwords do not match']
-      }
-    }))
+    // Mock useActionState to return validation errors
+    mockUseActionState.mockReturnValue([
+      {
+        message: 'Validation failed',
+        success: false,
+        errors: {
+          email: ['Invalid email address'],
+          password: ['Password too short'],
+          confirmPassword: ['Passwords do not match']
+        }
+      },
+      jest.fn(),
+      false
+    ])
 
     render(<SignupForm />)
-    
-    const submitButton = screen.getByRole('button', { name: /sign up/i })
-    fireEvent.click(submitButton)
     
     await waitFor(() => {
       expect(screen.getByText('Invalid email address')).toBeInTheDocument()

@@ -31,10 +31,10 @@ describe('OnboardingStepper', () => {
   })
 
   it('should show completed steps with check marks', () => {
-    render(<OnboardingStepper currentStep={3} />)
+    const { container } = render(<OnboardingStepper currentStep={3} />)
     
-    const completedSteps = screen.getAllByRole('generic', { hidden: true })
-    const checkIcons = completedSteps.filter(el => el.classList.contains('lucide-check'))
+    // Find check icons by looking for SVG elements with specific className
+    const checkIcons = container.querySelectorAll('svg.h-5.w-5.text-primary-foreground')
     expect(checkIcons.length).toBeGreaterThan(0)
   })
 
@@ -54,10 +54,10 @@ describe('OnboardingStepper', () => {
   })
 
   it('should handle completion state', () => {
-    render(<OnboardingStepper currentStep={0} />)
+    const { container } = render(<OnboardingStepper currentStep={0} />)
     
-    const allSteps = screen.getAllByRole('generic', { hidden: true })
-    const checkIcons = allSteps.filter(el => el.classList.contains('lucide-check'))
+    // Find check icons by looking for SVG elements with specific className
+    const checkIcons = container.querySelectorAll('svg.h-5.w-5.text-primary-foreground')
     expect(checkIcons.length).toBe(4)
   })
 

@@ -1,5 +1,6 @@
 
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
 import { useTheme } from 'next-themes'
 
@@ -29,25 +30,33 @@ describe('ThemeToggle', () => {
     expect(screen.getByRole('button', { name: /toggle theme/i })).toBeInTheDocument()
   })
 
-  it('should open dropdown menu when clicked', () => {
+  it('should open dropdown menu when clicked', async () => {
+    const user = userEvent.setup()
     render(<ThemeToggle />)
     
     const toggleButton = screen.getByRole('button', { name: /toggle theme/i })
-    fireEvent.click(toggleButton)
+    await user.click(toggleButton)
     
-    expect(screen.getByText('Light')).toBeInTheDocument()
-    expect(screen.getByText('Dark')).toBeInTheDocument()
-    expect(screen.getByText('System')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Light')).toBeInTheDocument()
+      expect(screen.getByText('Dark')).toBeInTheDocument()
+      expect(screen.getByText('System')).toBeInTheDocument()
+    })
   })
 
-  it('should call setTheme when option selected', () => {
+  it('should call setTheme when option selected', async () => {
+    const user = userEvent.setup()
     render(<ThemeToggle />)
     
     const toggleButton = screen.getByRole('button', { name: /toggle theme/i })
-    fireEvent.click(toggleButton)
+    await user.click(toggleButton)
+    
+    await waitFor(() => {
+      expect(screen.getByText('Dark')).toBeInTheDocument()
+    })
     
     const darkOption = screen.getByText('Dark')
-    fireEvent.click(darkOption)
+    await user.click(darkOption)
     
     expect(mockSetTheme).toHaveBeenCalledWith('dark')
   })

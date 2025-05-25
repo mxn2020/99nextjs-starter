@@ -13,31 +13,48 @@ jest.mock('next/headers', () => ({
   cookies: jest.fn(() => Promise.resolve(new Map())),
 }))
 
+const mockSingle = jest.fn()
+const mockEq = jest.fn(() => ({ single: mockSingle }))
+const mockSelect = jest.fn(() => ({ eq: mockEq }))
+const mockUpdateEq = jest.fn()
+const mockUpdate = jest.fn(() => ({ eq: mockUpdateEq }))
+const mockInsert = jest.fn(() => ({ select: jest.fn() }))
+const mockFrom = jest.fn(() => ({
+  select: mockSelect,
+  update: mockUpdate,
+  insert: mockInsert,
+}))
+
+const mockUpload = jest.fn()
+const mockGetPublicUrl = jest.fn()
+const mockStorageFrom = jest.fn(() => ({
+  upload: mockUpload,
+  getPublicUrl: mockGetPublicUrl,
+}))
+
 const mockSupabase = {
   auth: {
     getUser: jest.fn(),
   },
-  from: jest.fn(() => ({
-    select: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        single: jest.fn(),
-      })),
-    })),
-    update: jest.fn(() => ({
-      eq: jest.fn(),
-    })),
-  })),
+  from: mockFrom,
   storage: {
-    from: jest.fn(() => ({
-      upload: jest.fn(),
-      getPublicUrl: jest.fn(),
-    })),
+    from: mockStorageFrom,
   },
 }
 
 describe('User Actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockSingle.mockClear()
+    mockEq.mockClear()
+    mockSelect.mockClear()
+    mockUpdate.mockClear()
+    mockUpdateEq.mockClear()
+    mockInsert.mockClear()
+    mockFrom.mockClear()
+    mockUpload.mockClear()
+    mockGetPublicUrl.mockClear()
+    mockStorageFrom.mockClear()
     ;(createSupabaseServerClient as jest.Mock).mockResolvedValue(mockSupabase)
   })
 
@@ -50,7 +67,7 @@ describe('User Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().update().eq.mockResolvedValue({
+      mockUpdateEq.mockResolvedValue({
         error: null,
       })
 
@@ -109,26 +126,26 @@ describe('User Actions', () => {
         error: null,
       })
 
-      mockSupabase.storage.from().upload.mockResolvedValue({
+      mockUpload.mockResolvedValue({
         data: { path: 'avatars/123/avatar.jpg' },
         error: null,
       })
 
-      mockSupabase.storage.from().getPublicUrl.mockReturnValue({
+      mockGetPublicUrl.mockReturnValue({
         data: { publicUrl: 'https://example.com/avatar.jpg' },
       })
 
-      mockSupabase.from().update().eq.mockResolvedValue({
+      mockUpdateEq.mockResolvedValue({
         error: null,
       })
 
       const formData = new FormData()
       formData.append('display_name', 'Updated Name')
-      formData.append('avatar_file', new File([''], 'avatar.jpg', { type: 'image/jpeg' }))
+      formData.append('avatar_file', new File(['file content'], 'avatar.jpg', { type: 'image/jpeg' }))
 
       const result = await updateUserProfileServerAction({}, formData)
 
-      expect(mockSupabase.storage.from().upload).toHaveBeenCalled()
+      expect(mockUpload).toHaveBeenCalled()
       expect(result.success).toBe(true)
     })
 
@@ -140,14 +157,14 @@ describe('User Actions', () => {
         error: null,
       })
 
-      mockSupabase.storage.from().upload.mockResolvedValue({
+      mockUpload.mockResolvedValue({
         data: null,
         error: { message: 'Upload failed' },
       })
 
       const formData = new FormData()
       formData.append('display_name', 'Updated Name')
-      formData.append('avatar_file', new File([''], 'avatar.jpg', { type: 'image/jpeg' }))
+      formData.append('avatar_file', new File(['file content'], 'avatar.jpg', { type: 'image/jpeg' }))
 
       const result = await updateUserProfileServerAction({}, formData)
 
@@ -166,7 +183,7 @@ describe('User Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().update().eq.mockResolvedValue({
+      mockUpdateEq.mockResolvedValue({
         error: { message: 'Database error' },
       })
 
@@ -192,12 +209,12 @@ describe('User Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: { preferences: {} },
         error: null,
       })
 
-      mockSupabase.from().update().eq.mockResolvedValue({
+      mockUpdateEq.mockResolvedValue({
         error: null,
       })
 
@@ -262,12 +279,12 @@ describe('User Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: { preferences: existingPreferences },
         error: null,
       })
 
-      mockSupabase.from().update().eq.mockResolvedValue({
+      mockUpdateEq.mockResolvedValue({
         error: null,
       })
 
@@ -300,7 +317,7 @@ describe('User Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: null,
         error: { code: 'ERROR', message: 'Database error' },
       })
@@ -325,12 +342,12 @@ describe('User Actions', () => {
         error: null,
       })
 
-      mockSupabase.from().select().eq().single.mockResolvedValue({
+      mockSingle.mockResolvedValue({
         data: { preferences: {} },
         error: null,
       })
 
-      mockSupabase.from().update().eq.mockResolvedValue({
+      mockUpdateEq.mockResolvedValue({
         error: { message: 'Update failed' },
       })
 

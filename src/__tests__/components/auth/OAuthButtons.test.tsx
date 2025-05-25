@@ -34,7 +34,8 @@ describe('OAuthButtons', () => {
   })
 
   it('should call loginWithOAuth when login button clicked', async () => {
-    const { loginWithOAuth } = require('@/server/auth.actions')
+    const authActions = await import('@/server/auth.actions')
+    const loginWithOAuth = authActions.loginWithOAuth as jest.Mock
     loginWithOAuth.mockResolvedValue({ success: true })
 
     render(<OAuthButtons manualAccountLinking={false} />)
@@ -48,7 +49,8 @@ describe('OAuthButtons', () => {
   })
 
   it('should call linkOAuthAccount when linking button clicked', async () => {
-    const { linkOAuthAccount } = require('@/server/auth.actions')
+    const authActions = await import('@/server/auth.actions')
+    const linkOAuthAccount = authActions.linkOAuthAccount as jest.Mock
     linkOAuthAccount.mockResolvedValue({ success: true })
 
     render(<OAuthButtons manualAccountLinking={true} />)
@@ -62,7 +64,8 @@ describe('OAuthButtons', () => {
   })
 
   it('should show loading state when provider is loading', async () => {
-    const { loginWithOAuth } = require('@/server/auth.actions')
+    const authActions = await import('@/server/auth.actions')
+    const loginWithOAuth = authActions.loginWithOAuth as jest.Mock
     loginWithOAuth.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1000)))
 
     render(<OAuthButtons manualAccountLinking={false} />)
@@ -76,7 +79,8 @@ describe('OAuthButtons', () => {
   })
 
   it('should pass redirectTo parameter', async () => {
-    const { loginWithOAuth } = require('@/server/auth.actions')
+    const authActions = await import('@/server/auth.actions')
+    const loginWithOAuth = authActions.loginWithOAuth as jest.Mock
     loginWithOAuth.mockResolvedValue({ success: true })
 
     render(<OAuthButtons manualAccountLinking={false} redirectTo="/dashboard" />)

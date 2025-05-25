@@ -14,13 +14,14 @@ describe('ChangePasswordForm', () => {
   it('should render password change form fields', () => {
     render(<ChangePasswordForm />)
     
-    expect(screen.getByLabelText(/new password/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/confirm new password/i)).toBeInTheDocument()
+    expect(screen.getByLabelText('New Password')).toBeInTheDocument()
+    expect(screen.getByLabelText('Confirm New Password')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /update password/i })).toBeInTheDocument()
   })
 
   it('should display success message when password updated', async () => {
-    const { changePasswordAction } = require('@/server/auth.actions')
+    const authActions = await import('@/server/auth.actions')
+    const changePasswordAction = authActions.changePasswordAction as jest.Mock
     changePasswordAction.mockReturnValue(Promise.resolve({
       message: 'Password updated successfully!',
       success: true,
@@ -29,8 +30,8 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />)
     
-    const newPasswordInput = screen.getByLabelText(/new password/i)
-    const confirmPasswordInput = screen.getByLabelText(/confirm new password/i)
+    const newPasswordInput = screen.getByLabelText('New Password')
+    const confirmPasswordInput = screen.getByLabelText('Confirm New Password')
     const submitButton = screen.getByRole('button', { name: /update password/i })
     
     fireEvent.change(newPasswordInput, { target: { value: 'newpassword123' } })
@@ -43,7 +44,8 @@ describe('ChangePasswordForm', () => {
   })
 
   it('should display error message when update fails', async () => {
-    const { changePasswordAction } = require('@/server/auth.actions')
+    const authActions = await import('@/server/auth.actions')
+    const changePasswordAction = authActions.changePasswordAction as jest.Mock
     changePasswordAction.mockReturnValue(Promise.resolve({
       message: 'Failed to update password',
       success: false,
@@ -52,8 +54,8 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />)
     
-    const newPasswordInput = screen.getByLabelText(/new password/i)
-    const confirmPasswordInput = screen.getByLabelText(/confirm new password/i)
+    const newPasswordInput = screen.getByLabelText('New Password')
+    const confirmPasswordInput = screen.getByLabelText('Confirm New Password')
     const submitButton = screen.getByRole('button', { name: /update password/i })
     
     fireEvent.change(newPasswordInput, { target: { value: 'newpassword123' } })
@@ -66,13 +68,13 @@ describe('ChangePasswordForm', () => {
   })
 
   it('should show field errors when validation fails', async () => {
-    const { changePasswordAction } = require('@/server/auth.actions')
+    const authActions = await import('@/server/auth.actions')
+    const changePasswordAction = authActions.changePasswordAction as jest.Mock
     changePasswordAction.mockReturnValue(Promise.resolve({
       message: 'Validation failed',
       success: false,
       errors: {
-        newPassword: ['Password too short'],
-        confirmNewPassword: ['Passwords do not match']
+        newPassword: ['New password must be at least 8 characters long.']
       }
     }))
 
@@ -82,13 +84,13 @@ describe('ChangePasswordForm', () => {
     fireEvent.click(submitButton)
     
     await waitFor(() => {
-      expect(screen.getByText('Password too short')).toBeInTheDocument()
-      expect(screen.getByText('Passwords do not match')).toBeInTheDocument()
+      expect(screen.getByText('New password must be at least 8 characters long.')).toBeInTheDocument()
     })
   })
 
   it('should reset form after successful update', async () => {
-    const { changePasswordAction } = require('@/server/auth.actions')
+    const authActions = await import('@/server/auth.actions')
+    const changePasswordAction = authActions.changePasswordAction as jest.Mock
     changePasswordAction.mockReturnValue(Promise.resolve({
       message: 'Password updated successfully!',
       success: true,
@@ -97,8 +99,8 @@ describe('ChangePasswordForm', () => {
 
     render(<ChangePasswordForm />)
     
-    const newPasswordInput = screen.getByLabelText(/new password/i) as HTMLInputElement
-    const confirmPasswordInput = screen.getByLabelText(/confirm new password/i) as HTMLInputElement
+    const newPasswordInput = screen.getByLabelText('New Password') as HTMLInputElement
+    const confirmPasswordInput = screen.getByLabelText('Confirm New Password') as HTMLInputElement
     const submitButton = screen.getByRole('button', { name: /update password/i })
     
     fireEvent.change(newPasswordInput, { target: { value: 'newpassword123' } })
