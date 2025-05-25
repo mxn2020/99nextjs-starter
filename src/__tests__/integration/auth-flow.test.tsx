@@ -190,9 +190,9 @@ describe('Authentication Flow Integration', () => {
       expect(submitButton).toBeInTheDocument()
     })
 
-    it('should display signup validation errors correctly', () => {
+    it('should display signup validation errors correctly', async () => {
       // Test the FormFieldError component directly to ensure error display works
-      const { FormFieldError } = require('@/components/common/FormFieldError')
+      const { FormFieldError } = await import('@/components/common/FormFieldError')
       
       render(
         <div>

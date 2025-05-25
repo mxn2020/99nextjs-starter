@@ -1,5 +1,6 @@
 
 import '@testing-library/jest-dom'
+import { TextEncoder, TextDecoder } from 'util'
 
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
@@ -21,7 +22,6 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-const { TextEncoder, TextDecoder } = require('util')
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
 
