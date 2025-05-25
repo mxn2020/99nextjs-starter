@@ -228,8 +228,8 @@ export async function customRoleCheck(checkFn: (user: User) => boolean): Promise
 /*
 'use server';
 
-import { withAuth, withRole, hasRole, hasAnyRole } from '@workspace/halo-db/supabase/server-action-wrapper';
-import { type ActionResult, type User } from '@workspace/halo-db/types';
+import { withAuth, withRole, hasRole, hasAnyRole } from '@99packages/halo-db/supabase/server-action-wrapper';
+import { type ActionResult, type User } from '@99packages/halo-db/types';
 import { cookies } from 'next/headers';
 
 // Define the core action with authentication only

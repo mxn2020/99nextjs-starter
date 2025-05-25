@@ -1,16 +1,15 @@
 
+import { Suspense } from 'react';
 import { getCurrentUser } from '@/server/auth.actions';
 import ProfileForm from '@/components/user/ProfileForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { redirect } from 'next/navigation';
-
-export default async function ProfilePage() {
+import ProfileFormSkeleton from '@/components/common/ProfileFormSkeleton';
+async function ProfileContent() {
 const user = await getCurrentUser();
-
 if (!user || !user.profile) {
-redirect('/login?message=User not found'); // Should be handled by layout/middleware
+redirect('/login?message=User not found');
 }
-
 return (
 <div className="max-w-2xl mx-auto">
 <Card>
@@ -23,5 +22,12 @@ return (
 </CardContent>
 </Card>
 </div>
+);
+}
+export default function ProfilePage() {
+return (
+<Suspense fallback={<ProfileFormSkeleton />}>
+<ProfileContent />
+</Suspense>
 );
 }
