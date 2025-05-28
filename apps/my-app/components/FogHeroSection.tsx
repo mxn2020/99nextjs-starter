@@ -22,101 +22,55 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [revealedAreas, setRevealedAreas] = useState<RevealedArea[]>([]);
   const [isMouseMoving, setIsMouseMoving] = useState(false);
+  const [, forceUpdate] = useState(0); // Force re-render for animations
   
   const sectionRef = useRef<HTMLElement>(null);
   const areaIdRef = useRef(0);
   const mouseMoveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
-  const lastCleanupRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
 
   const REVEAL_RADIUS = 80;
   const AREA_LIFETIME = 3000;
   const MIN_DISTANCE_THRESHOLD = 8;
   const THROTTLE_MS = 16; // ~60fps
-  const CLEANUP_INTERVAL = 500; // Less frequent cleanup when not moving
 
-  // Optimized activeAreas calculation with better caching
-  const activeAreas = useMemo(() => {
-    const now = Date.now();
-    const filtered = revealedAreas.filter(area => now - area.timestamp < AREA_LIFETIME);
-    
-    // Only return new array if something actually changed
-    if (filtered.length === revealedAreas.length) {
-      return revealedAreas;
-    }
-    
-    return filtered;
-  }, [revealedAreas]);
-
-  // Smart cleanup that only runs when needed
-  const cleanupAreas = useCallback(() => {
-    const now = Date.now();
-    
-    // Only cleanup if we haven't cleaned up recently AND we have areas to potentially clean
-    if (now - lastCleanupRef.current < CLEANUP_INTERVAL || revealedAreas.length === 0) {
+  // Animation loop that runs when there are circles to animate
+  useEffect(() => {
+    if (revealedAreas.length === 0) {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
       return;
     }
-    
-    setRevealedAreas(prev => {
-      const filtered = prev.filter(area => now - area.timestamp < AREA_LIFETIME);
-      
-      // Only update state if something was actually removed
-      if (filtered.length === prev.length) {
-        return prev;
-      }
-      
-      lastCleanupRef.current = now;
-      return filtered;
-    });
-  }, [revealedAreas.length]);
 
-  // Use requestAnimationFrame for cleanup instead of setInterval
-  const scheduleCleanup = useCallback(() => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    
-    animationFrameRef.current = requestAnimationFrame(() => {
-      cleanupAreas();
+    const animate = () => {
+      const now = Date.now();
       
-      // Only schedule next cleanup if we have areas and mouse is not moving
-      if (revealedAreas.length > 0) {
-        setTimeout(() => scheduleCleanup(), isMouseMoving ? 100 : 400);
-      }
-    });
-  }, [cleanupAreas, revealedAreas.length, isMouseMoving]);
+      // Clean up expired areas
+      setRevealedAreas(prev => {
+        const filtered = prev.filter(area => now - area.timestamp < AREA_LIFETIME);
+        return filtered;
+      });
+      
+      // Force re-render for smooth animation
+      forceUpdate(prev => prev + 1);
+      
+      // Continue animation loop
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
 
-  // Start cleanup cycle when areas are added
-  useEffect(() => {
-    if (revealedAreas.length > 0) {
-      scheduleCleanup();
-    }
-    
+    animationFrameRef.current = requestAnimationFrame(animate);
+
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [revealedAreas.length > 0]); // Only depend on whether we have areas or not
+  }, [revealedAreas.length > 0]); // Only depend on whether we have areas
 
-  // Optimized canvas sizing with ResizeObserver
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      // Only trigger re-render if we have active areas
-      if (revealedAreas.length > 0) {
-        setRevealedAreas(prev => [...prev]);
-      }
-    });
-
-    resizeObserver.observe(section);
-    return () => resizeObserver.disconnect();
-  }, [revealedAreas.length > 0]);
-
-  // Optimized mouse handling with proper throttling
+  // Optimized mouse handling
   useEffect(() => {
     let lastMoveTime = 0;
     
@@ -131,7 +85,7 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
       const newX = e.clientX - rect.left;
       const newY = e.clientY - rect.top;
       
-      // Check distance threshold before updating
+      // Check distance threshold
       const distance = Math.sqrt(
         Math.pow(newX - lastMousePositionRef.current.x, 2) + 
         Math.pow(newY - lastMousePositionRef.current.y, 2)
@@ -152,9 +106,9 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
           timestamp: Date.now() 
         };
         
-        // Limit array size for performance
+        // Limit array size
         const newAreas = [...prev, newArea];
-        return newAreas.length > 80 ? newAreas.slice(-80) : newAreas;
+        return newAreas.length > 100 ? newAreas.slice(-100) : newAreas;
       });
 
       if (mouseMoveTimeoutRef.current) {
@@ -204,7 +158,31 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
     };
   }, [isHovering]);
 
-  // Memoize button content to prevent unnecessary re-renders
+  // Calculate circles for current frame
+  const visibleCircles = useMemo(() => {
+    const now = Date.now();
+    
+    return revealedAreas
+      .map(area => {
+        const age = now - area.timestamp;
+        const ageRatio = Math.min(age / AREA_LIFETIME, 1);
+        
+        // Smooth easing function for more natural fade-out
+        const easedRatio = 1 - Math.pow(1 - ageRatio, 3);
+        
+        const currentRadius = REVEAL_RADIUS * (1 - easedRatio * 0.85);
+        const opacity = 1 - easedRatio * 0.9;
+        
+        return {
+          ...area,
+          currentRadius,
+          opacity
+        };
+      })
+      .filter(circle => circle.opacity > 0.01 && circle.currentRadius > 1);
+  }, [revealedAreas, forceUpdate]); // Include forceUpdate to recalculate on each frame
+
+  // Memoize button content
   const buttonContent = useMemo(() => {
     if (!session) {
       return (
@@ -263,30 +241,12 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
     );
   }, [session]);
 
-  // Memoize visible circles to avoid recalculation
-  const visibleCircles = useMemo(() => {
-    const now = Date.now();
-    return activeAreas.map(area => {
-      const age = now - area.timestamp;
-      const ageRatio = Math.min(age / AREA_LIFETIME, 1);
-      const currentRadius = REVEAL_RADIUS * (1 - ageRatio * 0.85);
-      const opacity = 1 - ageRatio * 0.9;
-      
-      return {
-        ...area,
-        currentRadius,
-        opacity,
-        visible: opacity > 0.05 && currentRadius > 8
-      };
-    }).filter(circle => circle.visible);
-  }, [activeAreas]);
-
   return (
     <section 
       ref={sectionRef}
       className="relative py-48 md:py-64 lg:py-72 overflow-hidden"
     >
-      {/* Background layer - Vibe Coding Theme (revealed when MVP fog clears) */}
+      {/* Background layer - Vibe Coding Theme */}
       <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-purple-900 to-fuchsia-900 dark:from-amber-50 dark:via-yellow-50 dark:to-orange-50">
         <div className="container mx-auto px-4 text-center h-full flex items-center justify-center relative">
           <div className="mx-auto max-w-4xl">
@@ -318,13 +278,13 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
         </div>
       </div>
 
-      {/* MVP Fog Layer - This acts as the fog that covers the vibe theme */}
+      {/* MVP Fog Layer */}
       <div 
         className="absolute inset-0 z-10 bg-background" 
         style={{ 
           maskImage: 'url(#fog-mask)', 
           WebkitMaskImage: 'url(#fog-mask)',
-          willChange: isMouseMoving ? 'mask-image' : 'auto'
+          willChange: isMouseMoving || revealedAreas.length > 0 ? 'mask-image' : 'auto'
         }}
       >
         <div className="container mx-auto px-4 text-center h-full flex items-center justify-center">
@@ -372,7 +332,7 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
         </div>
       </div>
 
-      {/* SVG mask definition for the fog effect - CRITICAL for fog of war */}
+      {/* SVG mask definition */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none z-20" style={{ opacity: 0 }}>
         <defs>
           <mask id="fog-mask">
@@ -391,7 +351,7 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
         </defs>
       </svg>
 
-      {/* Enhanced custom cursor when hovering and moving */}
+      {/* Enhanced custom cursor */}
       {isHovering && (
         <div
           className={`absolute pointer-events-none z-50 transition-all duration-200 ${
@@ -406,26 +366,22 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
             willChange: 'transform'
           }}
         >
-          {/* Outer ring */}
           <div className={`absolute inset-0 rounded-full border-2 transition-all duration-200 ${
             isMouseMoving 
               ? 'border-purple-400/60 bg-purple-300/10' 
               : 'border-gray-400/40 bg-gray-300/10'
           }`}>
-            {/* Inner dot */}
             <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full transition-all duration-200 ${
               isMouseMoving 
                 ? 'bg-purple-400 shadow-lg shadow-purple-400/50' 
                 : 'bg-gray-400'
             }`} />
             
-            {/* Animated pulse ring when moving */}
             {isMouseMoving && (
               <div className="absolute inset-0 rounded-full border border-purple-300/30 animate-ping" />
             )}
           </div>
           
-          {/* Trailing effect */}
           {isMouseMoving && (
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-400/20 to-pink-400/20 blur-sm animate-pulse" />
           )}
