@@ -209,14 +209,14 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
     if (!session) {
       return (
         <>
-          <Link href="/login">
-            <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:from-pink-600 hover:via-purple-600 hover:to-cyan-600 border-0 dark:from-amber-600 dark:via-orange-600 dark:to-red-600 dark:hover:from-amber-700 dark:hover:via-orange-700 dark:hover:to-red-700 shadow-lg transition-all duration-300 transform hover:scale-105">
+          <Link href="/login" className="cursor-pointer">
+            <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:from-pink-600 hover:via-purple-600 hover:to-cyan-600 border-0 dark:from-amber-600 dark:via-orange-600 dark:to-red-600 dark:hover:from-amber-700 dark:hover:via-orange-700 dark:hover:to-red-700 shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer">
               Enter the Vibe
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/signup">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto border-pink-300/70 text-pink-200 hover:bg-pink-900/50 backdrop-blur-sm dark:border-amber-600 dark:text-amber-800 dark:hover:bg-amber-100/50 transition-all duration-300">
+          <Link href="/signup" className="cursor-pointer">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto border-pink-300/70 text-pink-200 hover:bg-pink-900/50 backdrop-blur-sm dark:border-amber-600 dark:text-amber-800 dark:hover:bg-amber-100/50 transition-all duration-300 cursor-pointer">
               Join the Flow
             </Button>
           </Link>
@@ -225,8 +225,8 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
     }
     
     return (
-      <Link href="/dashboard">
-        <Button size="lg" className="bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:from-pink-600 hover:via-purple-600 hover:to-cyan-600 border-0 dark:from-amber-600 dark:via-orange-600 dark:to-red-600 shadow-lg transform hover:scale-105 transition-all duration-300">
+      <Link href="/dashboard" className="cursor-pointer">
+        <Button size="lg" className="bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:from-pink-600 hover:via-purple-600 hover:to-cyan-600 border-0 dark:from-amber-600 dark:via-orange-600 dark:to-red-600 shadow-lg transform hover:scale-105 transition-all duration-300 cursor-pointer">
           Continue Vibing
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
@@ -238,14 +238,14 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
     if (!session) {
       return (
         <>
-          <Link href="/login">
-            <Button size="lg" className="w-full sm:w-auto">
+          <Link href="/login" className="cursor-pointer">
+            <Button size="lg" className="w-full sm:w-auto cursor-pointer">
               Start Building
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/signup">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto">
+          <Link href="/signup" className="cursor-pointer">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto cursor-pointer">
               Create Account
             </Button>
           </Link>
@@ -254,8 +254,8 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
     }
     
     return (
-      <Link href="/dashboard">
-        <Button size="lg">
+      <Link href="/dashboard" className="cursor-pointer">
+        <Button size="lg" className="cursor-pointer">
           Go to Dashboard
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
@@ -330,7 +330,7 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
         <div className="container mx-auto px-4 text-center h-full flex items-center justify-center">
           <div className="mx-auto max-w-4xl">
             <Badge variant="outline" className="mb-4">
-              <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline">
+              <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline cursor-pointer">
                 Open Source 99NextJS-Starter
               </Link>
             </Badge>
@@ -338,7 +338,7 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
               Build MVPs <span className="text-primary">Lightning Fast</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Skip the boilerplate and start building. A modern <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline">Next.js starter</Link> optimized for rapid prototyping 
+              Skip the boilerplate and start building. A modern <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline cursor-pointer">Next.js starter</Link> optimized for rapid prototyping 
               and vibe-driven development. Get your MVP to market in days, not weeks.
             </p>
             
@@ -349,22 +349,22 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
             {/* Tech Stack */}
             <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
               <span>Built with:</span>
-              <Link href="https://nextjs.org" target="_blank" rel="noopener noreferrer">
+              <Link href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="cursor-pointer">
                 <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">Next.js 15</Badge>
               </Link>
-              <Link href="https://react.dev" target="_blank" rel="noopener noreferrer">
+              <Link href="https://react.dev" target="_blank" rel="noopener noreferrer" className="cursor-pointer">
                 <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">React 19</Badge>
               </Link>
-              <Link href="https://www.typescriptlang.org" target="_blank" rel="noopener noreferrer">
+              <Link href="https://www.typescriptlang.org" target="_blank" rel="noopener noreferrer" className="cursor-pointer">
                 <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">TypeScript</Badge>
               </Link>
-              <Link href="https://supabase.com" target="_blank" rel="noopener noreferrer">
+              <Link href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="cursor-pointer">
                 <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">Supabase</Badge>
               </Link>
-              <Link href="https://tailwindcss.com" target="_blank" rel="noopener noreferrer">
+              <Link href="https://tailwindcss.com" target="_blank" rel="noopener noreferrer" className="cursor-pointer">
                 <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">Tailwind CSS</Badge>
               </Link>
-              <Link href="https://ui.shadcn.com" target="_blank" rel="noopener noreferrer">
+              <Link href="https://ui.shadcn.com" target="_blank" rel="noopener noreferrer" className="cursor-pointer">
                 <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">shadcn/ui</Badge>
               </Link>
             </div>

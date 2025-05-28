@@ -8,6 +8,7 @@ import MobileNav from './MobileNav';
 import type { User } from '@supabase/supabase-js';
 import type { UserProfile } from '@/lib/types';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { Github } from 'lucide-react';
 interface HeaderProps {
 user: (User & { profile: UserProfile | null }) | null;
 }
@@ -26,6 +27,14 @@ return (
 )}
 </div>
   <div className="flex items-center space-x-3">
+    <Link 
+      href="https://vercel.com/coder-verse/99nextjs-starter" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="text-muted-foreground hover:text-foreground transition-colors"
+    >
+      <Github className="h-5 w-5" />
+    </Link>
     <ThemeToggle />
     {userNavProps ? (
       <UserNav user={userNavProps} />
