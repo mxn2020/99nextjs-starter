@@ -1,18 +1,22 @@
 'use client';
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { AuthContext } from '../auth-context';
 import { createSupabaseAuth } from './client';
 import type { AuthHookResult, AuthConfig, User, SignInOptions, SignUpOptions, OAuthSignInOptions } from '../../types';
 import type { SupabaseAuthOptions } from './types';
+
 interface SupabaseAuthProviderProps {
   children: React.ReactNode;
   config?: Partial<AuthConfig & SupabaseAuthOptions>;
 }
+
 export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [supabaseClient] = useState(() => createSupabaseAuth(config));
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
@@ -39,6 +43,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
       subscription?.unsubscribe();
     };
   }, [supabaseClient]);
+
   const signIn = useCallback(async (options: SignInOptions) => {
     setLoading(true);
     setError(null);
@@ -51,6 +56,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
     setLoading(false);
     return result;
   }, [supabaseClient]);
+
   const signUp = useCallback(async (options: SignUpOptions) => {
     setLoading(true);
     setError(null);
@@ -63,6 +69,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
     setLoading(false);
     return result;
   }, [supabaseClient]);
+
   const signOut = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -74,6 +81,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
 
     setLoading(false);
   }, [supabaseClient]);
+
   const signInWithOAuth = useCallback(async (options: OAuthSignInOptions) => {
     setError(null);
     const result = await supabaseClient.signInWithOAuth(options);
@@ -83,6 +91,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
 
     return result;
   }, [supabaseClient]);
+
   const resetPassword = useCallback(async (email: string) => {
     setError(null);
     try {
@@ -93,6 +102,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
       throw new Error(errorMessage);
     }
   }, [supabaseClient]);
+
   const updateUser = useCallback(async (updates: Partial<User>) => {
     setError(null);
     try {
@@ -105,6 +115,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
       throw new Error(errorMessage);
     }
   }, [supabaseClient]);
+
   const refreshToken = useCallback(async () => {
     const result = await supabaseClient.refreshToken();
     if (result.error) {
@@ -113,6 +124,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
 
     return result;
   }, [supabaseClient]);
+
   const contextValue: AuthHookResult = {
     user,
     loading,
@@ -125,6 +137,7 @@ export function SupabaseAuthProvider({ children, config }: SupabaseAuthProviderP
     updateUser,
     refreshToken,
   };
+
   return (
     <AuthContext.Provider value={contextValue}>
       {children}

@@ -1,4 +1,4 @@
--- Create profiles table (extends auth.users)
+0-- Create profiles table (extends auth.users)
 CREATE TABLE public.users (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,

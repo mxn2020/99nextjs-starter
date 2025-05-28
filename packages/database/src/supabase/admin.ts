@@ -53,7 +53,7 @@ export function createSupabaseAdminClient<TDatabase = DefaultDatabase>(
   const config = getSupabaseConfig({
     serviceRoleKey: options?.serviceRoleKey || process.env.SUPABASE_SERVICE_ROLE_KEY,
     headers: options?.headers,
-    debug: options?.debug,
+    debug: options?.debug || process.env.NEXT_PUBLIC_SUPABASE_DEBUG === 'true',
     storage: {
       key: tokenStorageKey,
       cookieName: tokenStorageKey,

@@ -1,22 +1,31 @@
 import { createBrowserClient } from '@supabase/ssr';
 import type { DefaultDatabase } from './types';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseClientKeys, getSupabaseConfig } from './keys';
 
 export function createSupabaseBrowserClient<TDatabase = DefaultDatabase>(
   supabaseUrl?: string,
   supabaseAnonKey?: string
 ): SupabaseClient<TDatabase> {
-  const url = supabaseUrl || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = supabaseAnonKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const storageKey = process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key';
+  // Use standardized key functions with optional overrides
+  const { url, anonKey, storageKey } = supabaseUrl || supabaseAnonKey 
+    ? { 
+        url: supabaseUrl || process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        anonKey: supabaseAnonKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        storageKey: process.env.SUPABASE_STORAGE_KEY || 'sb-99nextjs-auth-token-storage-key'
+      }
+    : getSupabaseClientKeys();
 
-  if (!url || !key) {
+  // Get debug setting from config
+  const config = getSupabaseConfig();
+
+  if (!url || !anonKey) {
     throw new Error('Missing Supabase URL or anon key');
   }
 
   return createBrowserClient<TDatabase>(
     url,
-    key,
+    anonKey,
     {
       auth: {
         // Ensure PKCE is enabled for OAuth flows
@@ -30,7 +39,7 @@ export function createSupabaseBrowserClient<TDatabase = DefaultDatabase>(
         // Enable persistence across tabs
         persistSession: true,
         // Debug OAuth issues
-        debug: process.env.NODE_ENV === 'development',
+        debug: config.debug,
       },
       global: {
         headers: {

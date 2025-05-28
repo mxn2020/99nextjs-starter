@@ -94,10 +94,10 @@ export async function signupWithPassword(prevState: any, formData: FormData) {
 export async function loginWithOAuth(provider: 'github' | 'google', redirectTo?: string) {
   const supabase = await getServerClient();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3099';
-  
+
   // Construct the callback URL
   let authRedirectTo = `${appUrl}/auth/callback`;
-  
+
   if (redirectTo) {
     const params = new URLSearchParams();
     params.set('next', redirectTo);
@@ -129,7 +129,7 @@ export async function loginWithOAuth(provider: 'github' | 'google', redirectTo?:
     // redirect() throws NEXT_REDIRECT internally - this is expected behavior
     redirect(data.url);
   }
-  
+
   // This line should never be reached due to redirect above
   return { success: true };
 }
@@ -137,7 +137,7 @@ export async function loginWithOAuth(provider: 'github' | 'google', redirectTo?:
 // Enhanced linking function for existing users
 export async function linkOAuthAccount(provider: 'github' | 'google') {
   const supabase = await getServerClient();
-  
+
   // Verify user is already authenticated
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
@@ -164,7 +164,7 @@ export async function linkOAuthAccount(provider: 'github' | 'google') {
     // Don't wrap redirect in try-catch - let it throw naturally
     redirect(data.url);
   }
-  
+
   return { success: true };
 }
 

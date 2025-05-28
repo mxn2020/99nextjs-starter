@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { DefaultDatabase } from './types';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseClientKeys, getSupabaseConfig } from './keys';
 
 export async function createSupabaseServerClient<TDatabase = DefaultDatabase>(
   supabaseUrl?: string,
@@ -9,16 +10,24 @@ export async function createSupabaseServerClient<TDatabase = DefaultDatabase>(
 ): Promise<SupabaseClient<TDatabase>> {
   const cookieStore = await cookies();
   
-  const url = supabaseUrl || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = supabaseAnonKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Use standardized key functions with optional overrides
+  const { url, anonKey } = supabaseUrl || supabaseAnonKey 
+    ? { 
+        url: supabaseUrl || process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        anonKey: supabaseAnonKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      }
+    : getSupabaseClientKeys();
 
-  if (!url || !key) {
+  // Get debug setting from config
+  const config = getSupabaseConfig();
+
+  if (!url || !anonKey) {
     throw new Error('Missing Supabase URL or anon key');
   }
 
   return createServerClient<TDatabase>(
     url,
-    key,
+    anonKey,
     {
       cookies: {
         get(name: string) {
@@ -45,7 +54,7 @@ export async function createSupabaseServerClient<TDatabase = DefaultDatabase>(
         flowType: 'pkce',
         autoRefreshToken: false, // Handled by middleware
         persistSession: false, // Server-side doesn't persist
-        debug: process.env.NODE_ENV === 'development',
+        debug: config.debug,
       },
     }
   );

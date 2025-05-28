@@ -9,6 +9,7 @@ import type {
     SignUpOptions,
     OAuthSignInOptions
 } from '../types';
+
 export function useAuth(): AuthHookResult {
     const context = useContext(AuthContext);
     if (!context) {
@@ -31,43 +32,43 @@ export function useIsAuthenticated(): boolean {
 
 // Hook-based guards
 export function useRequireAuth(): User {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    throw new Promise(() => {}); // Suspend component
-  }
-  
-  if (!user) {
-    throw new Error('Authentication required');
-  }
-  
-  return user;
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        throw new Promise(() => { }); // Suspend component
+    }
+
+    if (!user) {
+        throw new Error('Authentication required');
+    }
+
+    return user;
 }
 
 export function useRequireRole(role: string | string[]): User {
-  const user = useRequireAuth();
-  const roles = Array.isArray(role) ? role : [role];
-  
-  const hasRequiredRole = roles.some(r => hasRole(user, r));
-  
-  if (!hasRequiredRole) {
-    throw new Error(`Required role not found: ${roles.join(', ')}`);
-  }
-  
-  return user;
+    const user = useRequireAuth();
+    const roles = Array.isArray(role) ? role : [role];
+
+    const hasRequiredRole = roles.some(r => hasRole(user, r));
+
+    if (!hasRequiredRole) {
+        throw new Error(`Required role not found: ${roles.join(', ')}`);
+    }
+
+    return user;
 }
 
 export function useRequirePermission(permission: string | string[]): User {
-  const user = useRequireAuth();
-  const permissions = Array.isArray(permission) ? permission : [permission];
-  
-  const hasRequiredPermission = permissions.some(p => hasPermission(user, p));
-  
-  if (!hasRequiredPermission) {
-    throw new Error(`Required permission not found: ${permissions.join(', ')}`);
-  }
-  
-  return user;
+    const user = useRequireAuth();
+    const permissions = Array.isArray(permission) ? permission : [permission];
+
+    const hasRequiredPermission = permissions.some(p => hasPermission(user, p));
+
+    if (!hasRequiredPermission) {
+        throw new Error(`Required permission not found: ${permissions.join(', ')}`);
+    }
+
+    return user;
 }
 
 // Role and permission hooks

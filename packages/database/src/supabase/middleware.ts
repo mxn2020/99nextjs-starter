@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 import type { DefaultDatabase } from './types';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseClientKeys } from './keys';
 
 export function createSupabaseMiddlewareClient<TDatabase = DefaultDatabase>(
   request: NextRequest
@@ -15,23 +16,21 @@ export function createSupabaseMiddlewareClient<TDatabase = DefaultDatabase>(
   if (!(request instanceof NextRequest)) {
     throw new Error('Invalid request object, expected NextRequest');
   }
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    throw new Error('Supabase URL or anon key is not set in environment variables');
+
+  // Use standardized key functions
+  const { url, anonKey } = getSupabaseClientKeys();
+
+  if (!url || !anonKey) {
+    throw new Error('Missing Supabase URL or anon key');
   }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!url || !key) {
-    throw new Error('Missing Supabase URL or anon key');
-  }
-
-  const supabase = createServerClient<TDatabase>(url, key, {
+  const supabase = createServerClient<TDatabase>(url, anonKey, {
     cookies: {
       get(name: string) {
         return request.cookies.get(name)?.value;
