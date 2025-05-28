@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getServerClient } from '@/lib/supabase/server';
 import { UserNav } from '@/components/layout/UserNav';
 import { FogHeroSection } from '@/components/FogHeroSection';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { 
   Shield, 
   Users, 
@@ -92,18 +93,29 @@ return (
           <span className="font-bold">99NextJS-Starter</span>
         </Link>
       </div>
-      {session && userProfile ? (
-        <UserNav user={{ email: session.user.email!, name: userProfile.display_name, avatarUrl: userProfile.avatar_url }} />
-      ) : (
-        <div className="flex items-center space-x-2">
-          <Link href="/login">
-            <Button variant="ghost">Login</Button>
-          </Link>
-          <Link href="/signup">
-            <Button>Sign Up</Button>
-          </Link>
-        </div>
-      )}
+      <div className="flex items-center space-x-3">
+        <Link 
+          href="https://vercel.com/coder-verse/99nextjs-starter" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Github className="h-5 w-5" />
+        </Link>
+        <ThemeToggle />
+        {session && userProfile ? (
+          <UserNav user={{ email: session.user.email!, name: userProfile.display_name, avatarUrl: userProfile.avatar_url }} />
+        ) : (
+          <div className="flex items-center space-x-2">
+            <Link href="/login">
+              <Button variant="ghost">Login</Button>
+            </Link>
+            <Link href="/signup">
+              <Button>Sign Up</Button>
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   </header>
   {/* Hero Section with Fog Effect */}
