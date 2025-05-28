@@ -89,13 +89,13 @@ return (
     <div className="container flex h-14 items-center justify-between">
       <div className="flex items-center space-x-2">
         <Shield className="h-6 w-6 text-primary" />
-        <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline">
+        <Link href="http://99nextjs-starter.dev" target="_blank" rel="noopener noreferrer" className="hover:underline">
           <span className="font-bold">99NextJS-Starter</span>
         </Link>
       </div>
       <div className="flex items-center space-x-3">
         <Link 
-          href="https://vercel.com/coder-verse/99nextjs-starter" 
+          href="https://github.com/mxn2020/99nextjs-starter" 
           target="_blank" 
           rel="noopener noreferrer"
           className="text-muted-foreground hover:text-foreground transition-colors"
@@ -207,7 +207,7 @@ return (
   <footer className="border-t py-12">
     <div className="container mx-auto px-4 text-center">
       <p className="text-muted-foreground">
-        Open source <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline">Next.js starter template</Link> with modern architecture and best practices.
+        Open source <Link href="https://github.com/mxn2020/99nextjs-starter" target="_blank" rel="noopener noreferrer" className="hover:underline">Next.js starter template</Link> with modern architecture and best practices.
       </p>
       <p className="text-sm text-muted-foreground mt-2">
         Built with ❤️ using Next.js, Supabase, TypeScript, and Tailwind CSS.

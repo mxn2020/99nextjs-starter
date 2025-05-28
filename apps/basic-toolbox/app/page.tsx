@@ -67,7 +67,7 @@ export default function Page() {
               Monorepo Package Demo
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline">
+              <Link href="http://99nextjs-starter.dev" target="_blank" rel="noopener noreferrer" className="hover:underline">
                 99Next.js Starter App Template
               </Link>
             </h1>

@@ -12,8 +12,8 @@ import { Analytics } from "@vercel/analytics/react"
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'NextJS Supabase Auth',
-  description: 'Full-stack app with NextJS and Supabase Authentication.',
+  title: '99NextJS-Starter',
+  description: 'Full-stack monorepo template with NextJS and Supabase Authentication.',
 };
 
 export default function RootLayout({

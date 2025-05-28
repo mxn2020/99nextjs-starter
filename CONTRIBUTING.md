@@ -1,4 +1,4 @@
-# Contributing to [NextJS-Supabase Authentication Starter](http://99nextjs-starter.cloud)
+# Contributing to [NextJS-Supabase Starter Template](http://99nextjs-starter.dev)
 
 ## 🌟 Welcome Contributors!
 
@@ -53,7 +53,7 @@ There are many ways to contribute:
    cd nextjs-supabase-starter
    ```
    
-   > For more information about this starter, visit [99nextjs-starter.cloud](http://99nextjs-starter.cloud)
+   > For more information about this starter, visit [99nextjs-starter.cloud](http://99nextjs-starter.dev)
 
 3. Install dependencies
    ```bash

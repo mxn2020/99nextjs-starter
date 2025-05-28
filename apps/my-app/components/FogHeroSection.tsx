@@ -292,7 +292,7 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
         <div className="container mx-auto px-4 text-center h-full flex items-center justify-center">
           <div className="mx-auto max-w-4xl">
             <Badge variant="outline" className="mb-4">
-              <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline cursor-pointer">
+              <Link href="https://github.com/mxn2020/99nextjs-starter" target="_blank" rel="noopener noreferrer" className="hover:underline cursor-pointer">
                 Open Source 99NextJS-Starter
               </Link>
             </Badge>
@@ -300,7 +300,7 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
               Build MVPs <span className="text-primary">Lightning Fast</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Skip the boilerplate and start building. A modern <Link href="http://99nextjs-starter.cloud" target="_blank" rel="noopener noreferrer" className="hover:underline cursor-pointer">Next.js starter</Link> optimized for rapid prototyping 
+              Skip the boilerplate and start building. A modern <Link href="https://github.com/mxn2020/99nextjs-starter" target="_blank" rel="noopener noreferrer" className="hover:underline cursor-pointer">Next.js starter</Link> optimized for rapid prototyping 
               and vibe-driven development. Get your MVP to market in days, not weeks.
             </p>
             

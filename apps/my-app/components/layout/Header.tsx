@@ -28,7 +28,7 @@ return (
 </div>
   <div className="flex items-center space-x-3">
     <Link 
-      href="https://vercel.com/coder-verse/99nextjs-starter" 
+      href="https://github.com/mxn2020/99nextjs-starter" 
       target="_blank" 
       rel="noopener noreferrer"
       className="text-muted-foreground hover:text-foreground transition-colors"

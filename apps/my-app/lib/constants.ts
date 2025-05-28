@@ -1,5 +1,5 @@
 
-export const APP_NAME = 'NextJS Supabase Auth';
+export const APP_NAME = '99NextJS-Starter'
 export const APP_DESCRIPTION = 'Full-stack app with NextJS and Supabase Authentication.';
 
 export const GITHUB_PROVIDER = 'github';
