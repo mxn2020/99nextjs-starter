@@ -1,0 +1,17 @@
+{
+  "extends": "@99packages/typescript-config/react-library.json",
+  "compilerOptions": {
+    "lib": ["es2022", "dom"],
+    "target": "es2022",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

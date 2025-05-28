@@ -1,0 +1,8 @@
+-- Sample data migration removed for clean local development
+-- 
+-- To add sample data:
+-- 1. Start the local Supabase instance: supabase start
+-- 2. Create users through the Auth UI or API
+-- 3. Use the application interface to create accounts and notes
+--
+-- This approach ensures proper auth flow and data consistency

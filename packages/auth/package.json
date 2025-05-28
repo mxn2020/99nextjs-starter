@@ -1,0 +1,65 @@
+{
+   "name": "@99packages/auth",
+   "version": "0.0.0",
+   "private": true,
+   "type": "module",
+   "exports": {
+      ".": "./src/index.ts",
+      "./supabase": "./src/providers/supabase/index.ts",
+      "./nextauth": "./src/providers/nextauth/index.ts",
+      "./jwt": "./src/providers/jwt/index.ts",
+      "./basic": "./src/providers/basic/index.ts",
+      "./better-auth": "./src/providers/better-auth/index.ts",
+      "./clerk": "./src/providers/clerk/index.ts",
+      "./providers": "./src/providers/index.ts",
+      "./hooks": "./src/hooks/index.ts",
+      "./middleware": "./src/middleware/index.ts",
+      "./api": "./src/api/index.ts",
+      "./guards": "./src/guards/index.ts",
+      "./types": "./src/types/index.ts",
+      "./errors": "./src/errors/index.ts",
+      "./utils": "./src/utils/index.ts",
+      "./testing": "./src/testing/index.ts",
+      "./components": "./src/components/index.ts"
+   },
+   "scripts": {
+      "type-check": "tsc --noEmit",
+      "test": "vitest"
+   },
+   "dependencies": {
+      "@auth/core": "^0.39.1",
+      "@clerk/nextjs": "^6.20.0",
+      "@clerk/themes": "^2.2.46",
+      "@supabase/ssr": "^0.6.1",
+      "@supabase/supabase-js": "^2.49.8",
+      "bcryptjs": "^3.0.2",
+      "better-auth": "^1.2.8",
+      "jose": "^6.0.11",
+      "jsonwebtoken": "^9.0.2",
+      "next-auth": "5.0.0-beta.28",
+      "react": "^19.1.0",
+      "react-dom": "^19.1.0",
+      "zod": "^3.25.28"
+   },
+   "devDependencies": {
+      "@99packages/eslint-config": "workspace:*",
+      "@99packages/typescript-config": "workspace:*",
+      "@types/bcryptjs": "^3.0.0",
+      "@types/jsonwebtoken": "^9.0.9",
+      "@types/node": "^22.15.21",
+      "@types/react": "^19.1.5",
+      "@types/react-dom": "^19.1.5",
+      "typescript": "^5.8.3",
+      "vitest": "^3.1.4"
+   },
+   "peerDependencies": {
+      "next": "*",
+      "react": "*",
+      "react-dom": "*"
+   },
+   "peerDependenciesMeta": {
+      "next": {
+         "optional": true
+      }
+   }
+}

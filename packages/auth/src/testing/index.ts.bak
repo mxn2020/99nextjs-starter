@@ -1,0 +1,443 @@
+import type { 
+  AuthHookResult, 
+  User, 
+  AuthResult, 
+  SignInOptions, 
+  SignUpOptions, 
+  OAuthSignInOptions 
+} from '../types';
+
+export interface MockAuthOptions {
+  user?: User | null;
+  loading?: boolean;
+  error?: string | null;
+  signInResult?: AuthResult;
+  signUpResult?: AuthResult;
+  oauthResult?: AuthResult;
+}
+
+export function createMockAuth(options: MockAuthOptions = {}): AuthHookResult {
+  const {
+    user = null,
+    loading = false,
+    error = null,
+    signInResult = { user: options.user || null },
+    signUpResult = { user: options.user || null },
+    oauthResult = { user: options.user || null },
+  } = options;
+
+  return {
+    user,
+    loading,
+    error,
+    
+    signIn: jest.fn().mockResolvedValue(signInResult),
+    signUp: jest.fn().mockResolvedValue(signUpResult),
+    signOut: jest.fn().mockResolvedValue(undefined),
+    signInWithOAuth: jest.fn().mockResolvedValue(oauthResult),
+    resetPassword: jest.fn().mockResolvedValue(undefined),
+    updateUser: jest.fn().mockImplementation(async (updates: Partial<User>) => ({
+      ...user,
+      ...updates,
+    })),
+    refreshToken: jest.fn().mockResolvedValue({ user }),
+  };
+}
+
+export function createMockUser(overrides: Partial<User> = {}): User {
+  return {
+    id: 'mock-user-id',
+    email: 'test@example.com',
+    name: 'Test User',
+    emailVerified: true,
+    roles: ['user'],
+    permissions: ['read'],
+    metadata: {},
+    createdAt: new Date('2023-01-01'),
+    updatedAt: new Date('2023-01-01'),
+    ...overrides,
+  };
+}
+
+export class MockAuthProvider {
+  private mockAuth: AuthHookResult;
+
+  constructor(options: MockAuthOptions = {}) {
+    this.mockAuth = createMockAuth(options);
+  }
+
+  setUser(user: User | null) {
+    this.mockAuth.user = user;
+  }
+
+  setLoading(loading: boolean) {
+    this.mockAuth.loading = loading;
+  }
+
+  setError(error: string | null) {
+    this.mockAuth.error = error;
+  }
+
+  getAuth(): AuthHookResult {
+    return this.mockAuth;
+  }
+
+  // Simulate authentication flows
+  async simulateSignIn(options: SignInOptions): Promise<AuthResult> {
+    this.setLoading(true);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    if (options.email === 'invalid@example.com') {
+      const result = { error: { code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' } };
+      this.setError('Invalid credentials');
+      this.setLoading(false);
+      return result;
+    }
+
+    const user = createMockUser({ email: options.email });
+    this.setUser(user);
+    this.setError(null);
+    this.setLoading(false);
+    
+    return { user };
+  }
+   async simulateSignUp(options: SignUpOptions): Promise<AuthResult> {
+   this.setLoading(true);
+   
+   // Simulate network delay
+   await new Promise(resolve => setTimeout(resolve, 100));
+   
+   if (options.email === 'existing@example.com') {
+     const result = { error: { code: 'USER_ALREADY_EXISTS', message: 'User already exists' } };
+     this.setError('User already exists');
+     this.setLoading(false);
+     return result;
+   }
+
+   const user = createMockUser({ 
+     email: options.email,
+     name: options.name,
+     emailVerified: false,
+   });
+   
+   this.setUser(user);
+   this.setError(null);
+   this.setLoading(false);
+   
+   return { user, needsVerification: true };
+ }
+
+ async simulateSignOut(): Promise<void> {
+   this.setLoading(true);
+   
+   // Simulate network delay
+   await new Promise(resolve => setTimeout(resolve, 50));
+   
+   this.setUser(null);
+   this.setError(null);
+   this.setLoading(false);
+ }
+
+ simulateAuthError(error: string) {
+   this.setError(error);
+ }
+
+ simulateNetworkError() {
+   this.setError('Network error');
+ }
+}
+
+// Test utilities for React components
+export const mockAuthContextValue = (options: MockAuthOptions = {}) => 
+ createMockAuth(options);
+
+// Jest setup helpers
+export function setupAuthMocks() {
+ // Mock localStorage
+ const localStorageMock = {
+   getItem: jest.fn(),
+   setItem: jest.fn(),
+   removeItem: jest.fn(),
+   clear: jest.fn(),
+ };
+ 
+ Object.defineProperty(window, 'localStorage', {
+   value: localStorageMock,
+ });
+
+ // Mock sessionStorage
+ const sessionStorageMock = {
+   getItem: jest.fn(),
+   setItem: jest.fn(),
+   removeItem: jest.fn(),
+   clear: jest.fn(),
+ };
+ 
+ Object.defineProperty(window, 'sessionStorage', {
+   value: sessionStorageMock,
+ });
+
+ // Mock fetch
+ global.fetch = jest.fn();
+
+ return {
+   localStorage: localStorageMock,
+   sessionStorage: sessionStorageMock,
+   fetch: global.fetch as jest.MockedFunction<typeof fetch>,
+ };
+}
+
+// Test scenarios
+export const authTestScenarios = {
+ signIn: {
+   success: {
+     email: 'test@example.com',
+     password: 'password123',
+     expectedUser: createMockUser({ email: 'test@example.com' }),
+   },
+   invalidCredentials: {
+     email: 'invalid@example.com',
+     password: 'wrongpassword',
+     expectedError: 'Invalid credentials',
+   },
+   networkError: {
+     email: 'test@example.com',
+     password: 'password123',
+     mockNetworkFailure: true,
+     expectedError: 'Network error',
+   },
+ },
+ signUp: {
+   success: {
+     email: 'new@example.com',
+     password: 'password123',
+     name: 'New User',
+     expectedUser: createMockUser({ 
+       email: 'new@example.com', 
+       name: 'New User',
+       emailVerified: false,
+     }),
+   },
+   userExists: {
+     email: 'existing@example.com',
+     password: 'password123',
+     name: 'Existing User',
+     expectedError: 'User already exists',
+   },
+ },
+ oauth: {
+   google: {
+     provider: 'google' as const,
+     expectedRedirect: true,
+   },
+   github: {
+     provider: 'github' as const,
+     expectedRedirect: true,
+   },
+ },
+};
+
+// Component testing utilities
+export function renderWithMockAuth(
+ component: React.ReactElement,
+ authOptions: MockAuthOptions = {}
+) {
+ const mockAuth = createMockAuth(authOptions);
+ 
+ return {
+   ...render(
+     <AuthContext.Provider value={mockAuth}>
+       {component}
+     </AuthContext.Provider>
+   ),
+   mockAuth,
+ };
+}
+
+// Provider-specific test utilities
+export const supabaseTestUtils = {
+ mockSupabaseResponse: (data: any, error: any = null) => ({
+   data,
+   error,
+ }),
+ 
+ mockSupabaseAuth: () => ({
+   signInWithPassword: jest.fn(),
+   signUp: jest.fn(),
+   signOut: jest.fn(),
+   getUser: jest.fn(),
+   getSession: jest.fn(),
+   onAuthStateChange: jest.fn(() => ({
+     data: { subscription: { unsubscribe: jest.fn() } },
+   })),
+ }),
+};
+
+export const nextAuthTestUtils = {
+ mockSession: (user: Partial<User> = {}) => ({
+   user: createMockUser(user),
+   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+ }),
+ 
+ mockUseSession: (session: any = null, status: string = 'authenticated') => ({
+   data: session,
+   status,
+ }),
+};
+
+export const jwtTestUtils = {
+ createMockToken: (payload: any = {}) => {
+   const header = { alg: 'HS256', typ: 'JWT' };
+   const defaultPayload = {
+     sub: 'mock-user-id',
+     email: 'test@example.com',
+     name: 'Test User',
+     iat: Math.floor(Date.now() / 1000),
+     exp: Math.floor(Date.now() / 1000) + 3600,
+     ...payload,
+   };
+   
+   // Create a mock JWT token (not actually signed)
+   const encodedHeader = btoa(JSON.stringify(header));
+   const encodedPayload = btoa(JSON.stringify(defaultPayload));
+   return `${encodedHeader}.${encodedPayload}.mock-signature`;
+ },
+ 
+ mockJwtVerify: jest.fn(),
+ mockJwtSign: jest.fn(),
+};
+
+export const clerkTestUtils = {
+ mockUser: (overrides: any = {}) => ({
+   id: 'clerk-user-id',
+   emailAddresses: [{ emailAddress: 'test@example.com' }],
+   firstName: 'Test',
+   lastName: 'User',
+   fullName: 'Test User',
+   imageUrl: 'https://example.com/avatar.jpg',
+   publicMetadata: {},
+   privateMetadata: {},
+   createdAt: Date.now(),
+   updatedAt: Date.now(),
+   ...overrides,
+ }),
+ 
+ mockUseUser: (user: any = null, isLoaded: boolean = true) => ({
+   user,
+   isLoaded,
+   isSignedIn: !!user,
+ }),
+ 
+ mockUseAuth: () => ({
+   signOut: jest.fn(),
+ }),
+};
+
+// Performance testing utilities
+export function measureAuthPerformance<T>(
+ operation: () => Promise<T>,
+ label: string = 'Auth Operation'
+): Promise<{ result: T; duration: number }> {
+ return new Promise(async (resolve) => {
+   const start = performance.now();
+   
+   try {
+     const result = await operation();
+     const duration = performance.now() - start;
+     
+     console.log(`${label} took ${duration.toFixed(2)}ms`);
+     
+     resolve({ result, duration });
+   } catch (error) {
+     const duration = performance.now() - start;
+     console.log(`${label} failed after ${duration.toFixed(2)}ms`);
+     throw error;
+   }
+ });
+}
+
+// Integration test helpers
+export const integrationTestHelpers = {
+ waitForAuth: async (timeout: number = 5000) => {
+   return new Promise((resolve, reject) => {
+     const timer = setTimeout(() => {
+       reject(new Error('Auth timeout'));
+     }, timeout);
+     
+     // Simulate waiting for auth state to settle
+     setTimeout(() => {
+       clearTimeout(timer);
+       resolve(true);
+     }, 100);
+   });
+ },
+ 
+ simulateUserInteraction: {
+   signIn: async (email: string, password: string) => {
+     // Simulate form interaction
+     await new Promise(resolve => setTimeout(resolve, 50));
+     return { success: true };
+   },
+   
+   signOut: async () => {
+     await new Promise(resolve => setTimeout(resolve, 25));
+     return { success: true };
+   },
+ },
+};
+
+// Error simulation utilities
+export const errorSimulation = {
+ networkError: () => {
+   throw new Error('Network request failed');
+ },
+ 
+ timeoutError: () => {
+   throw new Error('Request timeout');
+ },
+ 
+ authError: (code: string, message: string) => {
+   const error = new Error(message);
+   (error as any).code = code;
+   throw error;
+ },
+ 
+ validationError: (field: string, message: string) => {
+   const error = new Error(`Validation failed: ${message}`);
+   (error as any).field = field;
+   throw error;
+ },
+};
+
+// Mock implementations for different environments
+export const environmentMocks = {
+ // Browser environment
+ browser: () => {
+   Object.defineProperty(window, 'location', {
+     value: {
+       href: 'http://localhost:3000',
+       origin: 'http://localhost:3000',
+       pathname: '/',
+       search: '',
+       hash: '',
+     },
+     writable: true,
+   });
+ },
+ 
+ // Server environment
+ server: () => {
+   // Remove window object to simulate server environment
+   (global as any).window = undefined;
+ },
+ 
+ // Mobile environment
+ mobile: () => {
+   Object.defineProperty(navigator, 'userAgent', {
+     value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+     writable: true,
+   });
+ },
+};

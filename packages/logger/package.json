@@ -1,0 +1,49 @@
+{
+  "name": "@99packages/logger",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./logger": "./src/logger/index.ts",
+    "./errors": "./src/errors/index.ts",
+    "./handlers": "./src/handlers/index.ts",
+    "./boundaries": "./src/boundaries/index.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "pino": "^9.7.0",
+    "pino-pretty": "^13.0.0",
+    "serialize-error": "^12.0.0",
+    "stack-trace": "1.0.0-pre2",
+    "zod": "^3.25.28"
+  },
+  "devDependencies": {
+    "@99packages/typescript-config": "workspace:*",
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.5",
+    "@types/stack-trace": "^0.0.33",
+    "react": "^19.1.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
+  },
+  "peerDependencies": {
+    "next": "*",
+    "react": "*"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  }
+}

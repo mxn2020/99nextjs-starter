@@ -1,0 +1,41 @@
+{
+  "name": "basic",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit",
+    "db:generate-types": "supabase gen types typescript --project-id YOUR_PROJECT_ID > lib/types/supabase.ts",
+    "db:generate-types:local": "supabase gen types typescript --local > lib/types/supabase.ts"
+  },
+  "dependencies": {
+    "@99packages/audit-log": "workspace:*",
+    "@99packages/auth": "workspace:*",
+    "@99packages/database": "workspace:*",
+    "@99packages/logger": "workspace:*",
+    "@99packages/ui": "workspace:*",
+    "@supabase/ssr": "^0.5.1",
+    "@supabase/supabase-js": "^2.45.4",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.475.0",
+    "next": "^15.3.2",
+    "next-themes": "^0.4.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sonner": "^2.0.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@99packages/eslint-config": "workspace:^",
+    "@99packages/typescript-config": "workspace:*",
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
+    "typescript": "^5.8.3"
+  }
+}

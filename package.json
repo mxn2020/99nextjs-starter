@@ -1,22 +1,46 @@
 {
-  "name": "shadcn-ui-monorepo",
+  "name": "99nextjs-starter-monorepo",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "rm -rf node_modules && rm -rf apps/*/node_modules && rm -rf packages/*/node_modules && rm -rf .turbo && rm -rf apps/*/.next && rm -rf apps/*/dist && rm -rf packages/*/dist && rm -rf pnpm-lock.yaml",
+    "typecheck": "turbo typecheck",
+    "basic:dev": "pnpm --filter basic dev",
+    "basic:build": "pnpm --filter basic build",
+    "basic:start": "pnpm --filter basic start",
+    "basic:lint": "pnpm --filter basic lint",
+    "basic:lint:fix": "pnpm --filter basic lint:fix",
+    "basic:typecheck": "pnpm --filter basic typecheck",
+    "basic:supabase:start": "cd apps/basic && supabase start",
+    "basic:supabase:stop": "cd apps/basic && supabase stop",
+    "basic:supabase:status": "cd apps/basic && supabase status",
+    "basic:supabase:reset": "cd apps/basic && supabase db reset"
   },
   "devDependencies": {
-    "@workspace/eslint-config": "workspace:*",
-    "@workspace/typescript-config": "workspace:*",
+    "@99packages/eslint-config": "workspace:*",
+    "@99packages/typescript-config": "workspace:*",
+    "@types/node": "^22.15.23",
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
     "prettier": "^3.5.1",
     "turbo": "^2.4.2",
-    "typescript": "5.7.3"
+    "typescript": "^5.8.3"
   },
   "packageManager": "pnpm@10.4.1",
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
+    "@supabase/storage-js": "^2.7.3",
+    "next": "15.3.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.56.4",
+    "zod": "link:@hookform/resolvers/zod"
   }
 }

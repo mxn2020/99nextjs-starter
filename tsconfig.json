@@ -1,4 +1,36 @@
 {
-  "extends": "@workspace/typescript-config/base.json"
+  "extends": "@99packages/typescript-config/base.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "noEmit": true,
+    "baseUrl": "."
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx"
+, "packages/auth/src/testing/index.ts.bak" ],
+  "exclude": [
+    "node_modules",
+    ".turbo",
+    "dist"
+  ]
 }
-

@@ -1,0 +1,121 @@
+/* Enhanced fog effect animations for improved fog of war */
+@keyframes fogFloat {
+  0% {
+    transform: translateX(-15px) translateY(-10px) rotate(0deg);
+    opacity: 0.2;
+  }
+  25% {
+    transform: translateX(10px) translateY(-5px) rotate(90deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateX(15px) translateY(10px) rotate(180deg);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateX(-10px) translateY(5px) rotate(270deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(-15px) translateY(-10px) rotate(360deg);
+    opacity: 0.2;
+  }
+}
+
+@keyframes fogDrift {
+  0% {
+    transform: translateX(0) translateY(0) scale(1) rotate(0deg);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translateX(25px) translateY(-15px) scale(1.1) rotate(120deg);
+    opacity: 0.5;
+  }
+  66% {
+    transform: translateX(-20px) translateY(10px) scale(0.9) rotate(240deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(0) translateY(0) scale(1) rotate(360deg);
+    opacity: 0.3;
+  }
+}
+
+@keyframes fogPulse {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.3) rotate(180deg);
+  }
+}
+
+@keyframes fogSpiral {
+  0% {
+    transform: rotate(0deg) translateX(10px) rotate(0deg);
+    opacity: 0.2;
+  }
+  100% {
+    transform: rotate(360deg) translateX(10px) rotate(-360deg);
+    opacity: 0.2;
+  }
+}
+
+@keyframes fogGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(200, 200, 200, 0.3);
+    opacity: 0.3;
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(200, 200, 200, 0.6);
+    opacity: 0.6;
+  }
+}
+
+/* Fog particle classes */
+.fog-particle-1 {
+  animation: fogFloat 10s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.fog-particle-2 {
+  animation: fogDrift 15s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.fog-particle-3 {
+  animation: fogPulse 8s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+/* Vibe theme gradient animations */
+@keyframes vibeGlow {
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    filter: brightness(1.2) saturate(1.3);
+  }
+}
+
+.vibe-glow {
+  animation: vibeGlow 4s ease-in-out infinite;
+}
+
+/* Custom cursor trail effect */
+@keyframes cursorTrail {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.cursor-trail {
+  animation: cursorTrail 0.6s ease-out forwards;
+}
