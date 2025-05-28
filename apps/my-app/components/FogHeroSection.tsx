@@ -170,8 +170,10 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
         // Smooth easing function for more natural fade-out
         const easedRatio = 1 - Math.pow(1 - ageRatio, 3);
         
-        const currentRadius = REVEAL_RADIUS * (1 - easedRatio * 0.85);
-        const opacity = 1 - easedRatio * 0.9;
+        // Shrink all the way to 0 instead of stopping at 15% of original size
+        const currentRadius = REVEAL_RADIUS * (1 - easedRatio);
+        // Fade out slightly faster so opacity reaches 0 around the same time as radius
+        const opacity = Math.max(0, 1 - easedRatio * 1.1);
         
         return {
           ...area,
@@ -179,7 +181,7 @@ export function FogHeroSection({ session }: FogHeroSectionProps) {
           opacity
         };
       })
-      .filter(circle => circle.opacity > 0.01 && circle.currentRadius > 1);
+      .filter(circle => circle.opacity > 0.01 && circle.currentRadius > 0.5);
   }, [revealedAreas, forceUpdate]); // Include forceUpdate to recalculate on each frame
 
   // Memoize button content
